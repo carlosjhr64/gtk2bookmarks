@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-require 'lib/gtk2_app'
+gem 'gtk2applib', '~> 1.0.0'
+require 'gtk2applib/gtk2_app'
 
 about = {
 	'authors'	=> ['carlosjhr64@gmail.com'],
@@ -8,10 +9,10 @@ about = {
 	'website'	=> 'http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks',
 	'website-label'	=> 'Ruby Gnome Bookmarks App',
 	'license'	=> 'GPL',
-	'copyright'	=> '2009-Apr-01',
+	'copyright'	=> '2009-Apr-02',
 }
 
 Gtk2App.instance(__FILE__, 'Ruby-Gnome Bookmarks', about, false, true) do |window|
-  require 'lib/gtk2bookmarksapp'
+  require 'gtk2bookmarks/gtk2bookmarksapp'
   Gtk2BookmarksApp.new(window)
 end

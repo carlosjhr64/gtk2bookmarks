@@ -1,5 +1,5 @@
 # $Date: 2009/03/31 23:36:30 $
-require 'lib/bookmarks'
+require 'gtk2bookmarks/bookmarks'
 require 'net/http'
 require 'timeout'
 
@@ -77,17 +77,21 @@ class Gtk2BookmarksApp
       vbox.pack_start(hbox, false, false, Configuration::GUI[:padding])
     end
 
+    relist = proc {
+      entry_text = entry.text
+      entries.sort!(entry_text)
+      Configuration::LIST_SIZE.times do |i|
+        hbox	= vbox.children[i+1]
+        hbox.children[0].value = entries[i][Bookmarks::LINK]
+        hbox.children[1].value = entries[i][Bookmarks::TITLE]  + ' (' + entries[i][Bookmarks::SUBJECT].join(', ') + ')'
+      end
+    }
+
     th_list = Thread.new {
       while window do
         begin
           if !(entry_text == entry.text) then
-            entry_text = entry.text
-            entries.sort!(entry_text)
-            Configuration::LIST_SIZE.times do |i|
-              hbox	= vbox.children[i+1]
-              hbox.children[0].value = entries[i][Bookmarks::LINK]
-              hbox.children[1].value = entries[i][Bookmarks::TITLE]  + ' (' + entries[i][Bookmarks::SUBJECT].join(', ') + ')'
-            end
+            relist.call
           end
           sleep(Configuration::SLEEP[:normal])
         rescue Exception
@@ -98,6 +102,10 @@ class Gtk2BookmarksApp
     window.signal_connect('destroy'){
       th_response.kill if th_response && th_response.alive?
       th_list.kill if th_list && th_list.alive?
+    }
+    window.signal_connect('hide'){
+      entry.text = ''
+      relist.call
     }
   end
 end

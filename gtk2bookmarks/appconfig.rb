@@ -1,6 +1,5 @@
 # $Date: 2009/03/09 15:24:08 $
 require 'find'
-require 'lib/hildon_or_gtk2'
 
 module Configuration
   # Bookmark files
