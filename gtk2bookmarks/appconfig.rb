@@ -44,7 +44,7 @@ module Configuration
 #     end
 #   end
 # end
-# # maemo/mocrob .boomarks files
+# # maemo/microb .bookmarks files
 # maemo_bookmarks = home+'/.bookmarks'
 # if File.exist?(maemo_bookmarks) then
 #   Find.find(maemo_bookmarks) do |file|
@@ -55,6 +55,13 @@ module Configuration
 # end
 
   $stderr.puts BOOKMARK_FILES if $trace
+
+  # Maemo Tweeks
+  if Gtk2App::HILDON then
+    WIDGET_OPTIONS[:entry_font] = FONT[:large]
+    WIDGET_OPTIONS[:label_font] = FONT[:large]
+    WIDGET_OPTIONS[:padding] = 4
+  end
 
   # Image for link button
   IMAGE[:go]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/go.png')
@@ -119,6 +126,6 @@ module Configuration
       end
       entry[Bookmarks::SORT] *= 0.9	if entry[Bookmarks::RESPONSE].nil?
     }
-    # Now boorkmarks can be sorted by its SORT value...
+    # Now bookmarks can be sorted by its SORT value...
   end
 end

@@ -52,7 +52,7 @@ class Gtk2BookmarksApp
   end
 
   def initialize(window)
-    # Aggregate available boomarks
+    # Aggregate available bookmarks
     bookmarks = Bookmarks.new(BOOKMARK_FILES)
 
     # Delete links to missing files
@@ -92,14 +92,13 @@ class Gtk2BookmarksApp
 
     list = Gtk::VBox.new
     LIST_SIZE.times do |i|
-      break if !bookmarks[i]
       hbox2 = Gtk::HBox.new
       button2 = Gtk2App::Button.new(IMAGE[:go],hbox2){|bookmark|
 	system("#{APP[:browser]} '#{bookmark[Bookmarks::LINK]}' &")
         head(bookmark)
       }
       button2.value = bookmarks[i]
-      label = bookmarks[i][Bookmarks::TITLE] + ' (' + bookmarks[i][Bookmarks::SUBJECT].join(', ') + ')' 
+      label = (bookmarks[i])? bookmarks[i][Bookmarks::TITLE] + ' (' + bookmarks[i][Bookmarks::SUBJECT].join(', ') + ')': ''
       label = Gtk2App::Label.new(label,hbox2,{:wrap=>false})
       Gtk2App.pack(hbox2,list)
     end
@@ -110,8 +109,8 @@ class Gtk2BookmarksApp
       bookmarks.sort!(entry_text)
       LIST_SIZE.times do |i|
         hbox	= list.children[i]
-        hbox.children[0].value = bookmarks[i]
-        hbox.children[1].text = bookmarks[i][Bookmarks::TITLE]  + ' (' + bookmarks[i][Bookmarks::SUBJECT].join(', ') + ')'
+        hbox.children[0].value = bookmarks[i] # TBD: Dejavu, consolidate?
+        hbox.children[1].text = (bookmarks[i])? bookmarks[i][Bookmarks::TITLE]  + ' (' + bookmarks[i][Bookmarks::SUBJECT].join(', ') + ')': ''
       end
     }
   end
