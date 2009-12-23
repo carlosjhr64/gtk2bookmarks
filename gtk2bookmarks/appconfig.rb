@@ -3,16 +3,22 @@ require 'find'
 
 module Configuration
   # Number of bookmarks to show
-  LIST_SIZE	= 7
+  LIST_SIZE	= 12
 
   # Time to wait for a head request
   HTTP_TIMEOUT = 15
+
+  ENTRY_OPTIONS = {:width=>500}.freeze
 
   # Bookmark files
   BOOKMARK_FILES = []
 
   # Epiphany's bookmarks RDF file
   epiphany_rdf = ENV['HOME']+'/.gnome2/epiphany/bookmarks.rdf'
+  BOOKMARK_FILES.push( epiphany_rdf ) if File.exist?(epiphany_rdf)
+  # RDF file in user space?
+  # This gives the option to copy one's linux epiphany bookmarks on maemo.
+  epiphany_rdf = UserSpace::DIRECTORY+'/bookmarks.rdf'
   BOOKMARK_FILES.push( epiphany_rdf ) if File.exist?(epiphany_rdf)
 
   # One can add to BOOKMARK_FILES <exports>.html files
@@ -52,6 +58,7 @@ module Configuration
 
   # Image for link button
   IMAGE[:go]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/go.png')
+  IMAGE[:click]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/click.png')
   # Close to icon
   MENU[:dock] = '_Dock'
 

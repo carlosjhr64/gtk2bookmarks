@@ -27,18 +27,23 @@ class Gtk2BookmarksApp
     end
   end
 
+  def top_tags(bookmarks)
+    tags = Hash.new(0)
+    bookmarks.each{|bookmark|
+      bookmark[Bookmarks::SUBJECT].uniq.each{|subject|
+        tags[subject] += 1
+      }
+    }
+    # return top 10 sorted keys
+    tags.sort{|a,b| b[1]<=>a[1]}.map{|ab| ab.first}[0..9]
+  end
+
   def initialize(window)
     # Aggregate available boomarks
     bookmarks = Bookmarks.new(BOOKMARK_FILES)
 
     # Delete links to missing files
-    bookmarks.delete_if {|bookmark|
-      delete = false
-      if bookmark[Bookmarks::LINK] =~ /^file:\/\/(.*)$/ then
-        delete = true if !File.exist?($1)
-      end
-      delete
-    }
+    bookmarks.delete_if {|bookmark| (bookmark[Bookmarks::LINK] =~ /^file:\/\/(.*)$/) && !File.exist?($1) }
 
     vbox = Gtk::VBox.new
     scrolled = Gtk2App::ScrolledWindow.new(vbox)
@@ -47,29 +52,46 @@ class Gtk2BookmarksApp
     entry_text = ''
     bookmarks.sort!(entry_text)
 
-    entry = Gtk2App::Entry.new('',vbox)
+    relist = nil # About to be defined...
+    hbox1 = Gtk::HBox.new
+    button1 = Gtk2App::Button.new(IMAGE[:click],hbox1){ relist.call }
+    entry = Gtk2App::Entry.new('',hbox1,ENTRY_OPTIONS)
+    entry.signal_connect('activate'){ relist.call }
+    Gtk2App.pack(hbox1,vbox)
+
+    # Top Tags
+    top_tags_buttons = Gtk::HBox.new
+    top_tags(bookmarks).each{|tag|
+      Gtk2App::Button.new(tag,top_tags_buttons){|value|
+        entry.text = entry.text + ' ' + value
+        relist.call
+      }.value = tag
+    }
+    Gtk2App.pack(top_tags_buttons,vbox)
+
+    list = Gtk::VBox.new
     LIST_SIZE.times do |i|
       break if !bookmarks[i]
-      hbox = Gtk::HBox.new
-      button = Gtk2App::Button.new(IMAGE[:go],hbox){|bookmark|
+      hbox2 = Gtk::HBox.new
+      button2 = Gtk2App::Button.new(IMAGE[:go],hbox2){|bookmark|
 	system("#{APP[:browser]} '#{bookmark[Bookmarks::LINK]}' &")
         head(bookmark)
       }
-      button.value = bookmarks[i]
+      button2.value = bookmarks[i]
       label = bookmarks[i][Bookmarks::TITLE] + ' (' + bookmarks[i][Bookmarks::SUBJECT].join(', ') + ')' 
-      label = Gtk2App::Label.new(label,hbox,{:wrap=>false})
-      Gtk2App.pack(hbox,vbox)
+      label = Gtk2App::Label.new(label,hbox2,{:wrap=>false})
+      Gtk2App.pack(hbox2,list)
     end
+    Gtk2App.pack(list,vbox)
 
-    relist = proc {
+    relist = proc { # ...relist defined
       entry_text = entry.text
       bookmarks.sort!(entry_text)
       LIST_SIZE.times do |i|
-        hbox	= vbox.children[i+1]
+        hbox	= list.children[i]
         hbox.children[0].value = bookmarks[i]
         hbox.children[1].text = bookmarks[i][Bookmarks::TITLE]  + ' (' + bookmarks[i][Bookmarks::SUBJECT].join(', ') + ')'
       end
     }
-    entry.signal_connect('activate'){ relist.call }
   end
 end
