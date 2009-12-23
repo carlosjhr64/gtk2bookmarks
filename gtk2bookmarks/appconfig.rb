@@ -3,7 +3,7 @@ require 'find'
 
 module Configuration
   # Number of bookmarks to show
-  LIST_SIZE	= 12
+  LIST_SIZE	= 10
 
   # Time to wait for a head request
   HTTP_TIMEOUT = 15
@@ -21,38 +21,38 @@ module Configuration
   epiphany_rdf = UserSpace::DIRECTORY+'/bookmarks.rdf'
   BOOKMARK_FILES.push( epiphany_rdf ) if File.exist?(epiphany_rdf)
 
-  # One can add to BOOKMARK_FILES <exports>.html files
-  # see the code below for examples.
+# # One can add to BOOKMARK_FILES <exports>.html files
+# # see the code below for examples.
 
-  home = ENV['HOME']
-  # (older) Firefox's bookmarks HTML files
-  mozilla = home+'/.mozilla'
-  if File.exists?(mozilla) then
-    Find.find(mozilla) do |file|
-      if file =~ /\/bookmarks.html$/ then
-        BOOKMARK_FILES.push(file)
-      end
-    end
-  end
-  # Exported bookmarks HTML files (in Desktop?)
-  desktop = home+'/Desktop'
-  if File.exist?(desktop) then
-    Find.find(desktop) do |file|
-      Find.prune if File.directory?(file) && !(file == desktop)
-      if file =~ /\w*bookmarks\w*.html$/i then
-        BOOKMARK_FILES.push(file)
-      end
-    end
-  end
-  # maemo/mocrob .boomarks files
-  maemo_bookmarks = home+'/.bookmarks'
-  if File.exist?(maemo_bookmarks) then
-    Find.find(maemo_bookmarks) do |file|
-      if file =~ /\w*bookmarks\w*.xml$/i then
-        BOOKMARK_FILES.push(file)
-      end
-    end
-  end
+# home = ENV['HOME']
+# # (older) Firefox's bookmarks HTML files
+# mozilla = home+'/.mozilla'
+# if File.exists?(mozilla) then
+#   Find.find(mozilla) do |file|
+#     if file =~ /\/bookmarks.html$/ then
+#       BOOKMARK_FILES.push(file)
+#     end
+#   end
+# end
+# # Exported bookmarks HTML files (in Desktop?)
+# desktop = home+'/Desktop'
+# if File.exist?(desktop) then
+#   Find.find(desktop) do |file|
+#     Find.prune if File.directory?(file) && !(file == desktop)
+#     if file =~ /\w*bookmarks\w*.html$/i then
+#       BOOKMARK_FILES.push(file)
+#     end
+#   end
+# end
+# # maemo/mocrob .boomarks files
+# maemo_bookmarks = home+'/.bookmarks'
+# if File.exist?(maemo_bookmarks) then
+#   Find.find(maemo_bookmarks) do |file|
+#     if file =~ /\w*bookmarks\w*.xml$/i then
+#       BOOKMARK_FILES.push(file)
+#     end
+#   end
+# end
 
   $stderr.puts BOOKMARK_FILES if $trace
 

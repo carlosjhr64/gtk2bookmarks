@@ -27,15 +27,28 @@ class Gtk2BookmarksApp
     end
   end
 
-  def top_tags(bookmarks)
+  def top_tags(bookmarks,match=nil)
     tags = Hash.new(0)
     bookmarks.each{|bookmark|
-      bookmark[Bookmarks::SUBJECT].uniq.each{|subject|
-        tags[subject] += 1
-      }
+      if !match || bookmark[Bookmarks::SUBJECT].include?(match) then
+        bookmark[Bookmarks::SUBJECT].uniq.each{|subject|
+          tags[subject] += 1
+        }
+      end
     }
-    # return top 10 sorted keys
+    # return top 10 sorted keys TBD: Configurable?
     tags.sort{|a,b| b[1]<=>a[1]}.map{|ab| ab.first}[0..9]
+  end
+
+  def overwrite_tags_buttons(bookmarks,top_tags_buttons,tag=nil)
+    overwrites = top_tags_buttons.children
+    new_tags = overwrites.map{|x| x.label}
+    new_tags = top_tags(bookmarks,tag).concat(new_tags).uniq[0..9]
+    new_tags.each{|gat|
+      overwrite = overwrites.shift
+      overwrite.label = overwrite.value = gat
+    }
+    #top_tags_buttons.show_all
   end
 
   def initialize(window)
@@ -52,11 +65,18 @@ class Gtk2BookmarksApp
     entry_text = ''
     bookmarks.sort!(entry_text)
 
-    relist = nil # About to be defined...
+    # About to be defined...
+    top_tags_buttons = relist = nil
+
     hbox1 = Gtk::HBox.new
     button1 = Gtk2App::Button.new(IMAGE[:click],hbox1){ relist.call }
     entry = Gtk2App::Entry.new('',hbox1,ENTRY_OPTIONS)
     entry.signal_connect('activate'){ relist.call }
+    Gtk2App::Button.new('Clear',hbox1){
+      entry.text = ''
+      overwrite_tags_buttons(bookmarks,top_tags_buttons)
+      relist.call
+    }
     Gtk2App.pack(hbox1,vbox)
 
     # Top Tags
@@ -64,6 +84,7 @@ class Gtk2BookmarksApp
     top_tags(bookmarks).each{|tag|
       Gtk2App::Button.new(tag,top_tags_buttons){|value|
         entry.text = entry.text + ' ' + value
+        overwrite_tags_buttons(bookmarks,top_tags_buttons,value)
         relist.call
       }.value = tag
     }
