@@ -5,6 +5,10 @@ module Configuration
   # Number of bookmarks to show
   LIST_SIZE	= 10
 
+  # Gtk2Bookmarks will give the top tags, but
+  # one can overide with one's own initial tags.
+  INITIAL_TAGS	= nil  # ['Weather','Email']
+
   # Time to wait for a head request
   HTTP_TIMEOUT = 15
 
@@ -56,12 +60,13 @@ module Configuration
 
   $stderr.puts BOOKMARK_FILES if $trace
 
-  # Maemo Tweeks
   if Gtk2App::HILDON then
+    # Maemo Tweeks
     WIDGET_OPTIONS[:entry_font] = FONT[:large]
     WIDGET_OPTIONS[:label_font] = FONT[:large]
     WIDGET_OPTIONS[:padding] = 4
   end
+  WIDGET_OPTIONS[:button_focus_on_click] = false
 
   # Image for link button
   IMAGE[:go]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/go.png')

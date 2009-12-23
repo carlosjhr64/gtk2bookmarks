@@ -37,7 +37,8 @@ class Gtk2BookmarksApp
       end
     }
     # return top 10 sorted keys TBD: Configurable?
-    tags.sort{|a,b| b[1]<=>a[1]}.map{|ab| ab.first}[0..9]
+    ret = tags.sort{|a,b| b[1]<=>a[1]}.map{|ab| ab.first}[0..9]
+    (INITIAL_TAGS && !match)? INITIAL_TAGS.concat(ret).uniq[0..9]: ret
   end
 
   def overwrite_tags_buttons(bookmarks,top_tags_buttons,tag=nil)
