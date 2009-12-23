@@ -1,111 +1,75 @@
-# $Date: 2009/03/31 23:36:30 $
-require 'gtk2bookmarks/bookmarks'
-require 'net/http'
 require 'timeout'
-
-class MyButton < Gtk::Button
-  attr_accessor :value
-  def initialize(go)
-    super()
-    self.image = Gtk::Image.new(go)
-    @value = nil
-    self.signal_connect('clicked'){ system("#{Configuration::APP[:browser]} '#{@value}' &") if @value }
-  end
-end
-
-class MyLabel < Gtk::Label
-  def value=(txt)
-    self.text = txt
-    self.modify_font(Configuration::FONT[:normal])
-  end
-end
-
+require 'net/http'
+require 'gtk2applib/gtk2_app_widgets_entry'
+require 'gtk2applib/gtk2_app_widgets_button'
+require 'gtk2bookmarks/bookmarks'
 
 class Gtk2BookmarksApp
+  include Configuration
+
+  def head(bookmark)
+    if bookmark[Bookmarks::LINK] =~ /^http:\/\/([^\/]+)(\/.*)?$/ then
+      begin
+        host = $1
+        path = ($2)? $2: '/'
+        response = nil
+        Timeout::timeout(HTTP_TIMEOUT) {
+          Net::HTTP.start(host, 80) {|http|
+            response = http.head(path)
+            bookmark[Bookmarks::RESPONSE] = (response.message=~/Not\s+Found/i)? nil: response.message
+          }
+        }
+      rescue Exception
+        puts_bang!
+        bookmark[Bookmarks::RESPONSE] = nil
+      end
+      $stderr.puts bookmark[Bookmarks::RESPONSE] if $trace
+    end
+  end
+
   def initialize(window)
-    entries = Bookmarks.new(Configuration::BOOKMARK_FILES)
-    
-    entries.delete_if {|entry|
+    # Aggregate available boomarks
+    bookmarks = Bookmarks.new(BOOKMARK_FILES)
+
+    # Delete links to missing files
+    bookmarks.delete_if {|bookmark|
       delete = false
-      if entry[Bookmarks::LINK] =~ /^file:\/\/(.*)$/ then
+      if bookmark[Bookmarks::LINK] =~ /^file:\/\/(.*)$/ then
         delete = true if !File.exist?($1)
       end
       delete
     }
 
-    scrolled = Gtk::ScrolledWindow.new
-    window.add(scrolled)
     vbox = Gtk::VBox.new
-    scrolled.add_with_viewport( vbox )
+    scrolled = Gtk2App::ScrolledWindow.new(vbox)
+    window.add(scrolled)
 
     entry_text = ''
-    entries.sort!(entry_text)
+    bookmarks.sort!(entry_text)
 
-    th_response =  Thread.new {
-      entries.each {|entry|
-        if entry[Bookmarks::LINK] =~ /^http:\/\/([^\/]+)(\/.*)?$/ then
-          begin
-            host = $1
-            path = ($2)? $2: '/'
-            response = nil
-            Timeout::timeout(3) {
-              Net::HTTP.start(host, 80) {|http|
-                response = http.head(path)
-                entry[Bookmarks::RESPONSE] = (response.message=~/Not\s+Found/i)? nil: response.message
-              }
-            }
-          rescue Exception
-            entry[Bookmarks::RESPONSE] = nil
-          end
-          $stderr.puts entry[Bookmarks::RESPONSE] if $trace
-        end
-      }
-    }
-
-    entry = Gtk::Entry.new
-    entry.modify_font(Configuration::FONT[:normal])
-    vbox.pack_start(entry, false, false, Configuration::GUI[:padding])
-    Configuration::LIST_SIZE.times do |i|
-      break if !entries[i]
+    entry = Gtk2App::Entry.new('',vbox)
+    LIST_SIZE.times do |i|
+      break if !bookmarks[i]
       hbox = Gtk::HBox.new
-      button = MyButton.new(Configuration::IMAGE[:go])
-      button.value = entries[i][Bookmarks::LINK]
-      hbox.pack_start(button, false, false, Configuration::GUI[:padding])
-      label = MyLabel.new
-      label.value = entries[i][Bookmarks::TITLE] + ' (' + entries[i][Bookmarks::SUBJECT].join(', ') + ')' 
-      hbox.pack_start(label, false, false, Configuration::GUI[:padding])
-      vbox.pack_start(hbox, false, false, Configuration::GUI[:padding])
+      button = Gtk2App::Button.new(IMAGE[:go],hbox){|bookmark|
+	system("#{APP[:browser]} '#{bookmark[Bookmarks::LINK]}' &")
+        head(bookmark)
+      }
+      button.value = bookmarks[i]
+      label = bookmarks[i][Bookmarks::TITLE] + ' (' + bookmarks[i][Bookmarks::SUBJECT].join(', ') + ')' 
+      label = Gtk2App::Label.new(label,hbox,{:wrap=>false})
+      Gtk2App.pack(hbox,vbox)
     end
 
     relist = proc {
       entry_text = entry.text
-      entries.sort!(entry_text)
-      Configuration::LIST_SIZE.times do |i|
+      bookmarks.sort!(entry_text)
+      LIST_SIZE.times do |i|
         hbox	= vbox.children[i+1]
-        hbox.children[0].value = entries[i][Bookmarks::LINK]
-        hbox.children[1].value = entries[i][Bookmarks::TITLE]  + ' (' + entries[i][Bookmarks::SUBJECT].join(', ') + ')'
+        hbox.children[0].value = bookmarks[i]
+        hbox.children[1].text = bookmarks[i][Bookmarks::TITLE]  + ' (' + bookmarks[i][Bookmarks::SUBJECT].join(', ') + ')'
       end
     }
-
-    th_list = Thread.new {
-      while window do
-        begin
-          if !(entry_text == entry.text) then
-            relist.call
-          end
-          sleep(Configuration::SLEEP[:normal])
-        rescue Exception
-          puts_bang!
-        end
-      end
-    }
-    window.signal_connect('destroy'){
-      th_response.kill if th_response && th_response.alive?
-      th_list.kill if th_list && th_list.alive?
-    }
-    window.signal_connect('hide'){
-      entry.text = ''
-      relist.call
-    }
+    entry.signal_connect('activate'){ relist.call }
   end
 end
