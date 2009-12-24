@@ -8,9 +8,19 @@ module Configuration
   # Gtk2Bookmarks will give the top tags, but
   # one can overide with one's own initial tags.
   INITIAL_TAGS	= nil  # ['Weather','Email']
+  TAGS_EOI	= 9 # Number of tags - 1 (End Of Index)
+
+  # These are the color codes for search results
+  LOW_THRESH_HOLD		= 1.0
+  LOW_THRESH_HOLD_COLOR		= COLOR[:gray]
+  HIGH_THRESH_HOLD		= 30.0
+  HIGH_THRESH_HOLD_COLOR	= COLOR[:navy]
+  DEFAULT_FG_COLOR		= COLOR[:black]
 
   # Time to wait for a head request
   HTTP_TIMEOUT = 15
+  # Time to wait before rechecking the RDF bookmarks file
+  RDF_CHECK_TIME = 60
 
   ENTRY_OPTIONS = {:width=>500}.freeze
 
@@ -18,13 +28,16 @@ module Configuration
   BOOKMARK_FILES = []
 
   # Epiphany's bookmarks RDF file
-  epiphany_rdf = ENV['HOME']+'/.gnome2/epiphany/bookmarks.rdf'
-  BOOKMARK_FILES.push( epiphany_rdf ) if File.exist?(epiphany_rdf)
+  # This is the main file and bookmarks get updated whenever this file is updated.
+  EPIPHANY_RDF = ENV['HOME']+'/.gnome2/epiphany/bookmarks.rdf'
+  BOOKMARK_FILES.push(EPIPHANY_RDF) if File.exist?(EPIPHANY_RDF)
   # RDF file in user space?
   # This gives the option to copy one's linux epiphany bookmarks on maemo.
   epiphany_rdf = UserSpace::DIRECTORY+'/bookmarks.rdf'
   BOOKMARK_FILES.push( epiphany_rdf ) if File.exist?(epiphany_rdf)
 
+# Although the following commented out code is still available, I'm not supporting this route.
+# I'm now specifically targeting the Epiphany browser.
 # # One can add to BOOKMARK_FILES <exports>.html files
 # # see the code below for examples.
 
@@ -125,7 +138,7 @@ module Configuration
           entry[Bookmarks::SORT] += 2 if link=~rgxb
           entry[Bookmarks::SORT] += 1 if keywords=~rgxb
         }
-        # Promotion/demotion base on head
+        # Promotion/demotion based on head
         entry[Bookmarks::SORT] *= 1.1	if entry[Bookmarks::RESPONSE] && entry[Bookmarks::RESPONSE] =~ /^OK$/i
         entry[Bookmarks::SORT] *= 1.1	if entry[Bookmarks::RESPONSE] && entry[Bookmarks::RESPONSE] =~ /^Found$/i
       end
