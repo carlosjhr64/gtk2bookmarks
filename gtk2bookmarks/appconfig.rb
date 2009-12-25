@@ -85,7 +85,7 @@ module Configuration
   IMAGE[:go]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/go.png')
   IMAGE[:click]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/click.png')
   # Close to icon
-  MENU[:dock] = '_Dock'
+  MENU[:close] = '_Close'
 
   # Here one can customize how the rankings is done.
   def self.hits_valuation(bookmarks, query)
