@@ -162,8 +162,8 @@ class Bookmarks < Array
   def top_tags(match=nil)
     tags = Hash.new(0)
     self.each{|bookmark|
-      if !match || bookmark[Bookmarks::SUBJECT].include?(match) then
-        bookmark[Bookmarks::SUBJECT].uniq.each{|subject|
+      if !match || bookmark[SUBJECT].include?(match) then
+        bookmark[SUBJECT].uniq.each{|subject|
           tags[subject] += 1
         }
       end

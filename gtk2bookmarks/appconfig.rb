@@ -3,7 +3,7 @@ require 'find'
 
 module Configuration
   # Number of bookmarks to show
-  LIST_SIZE	= 10
+  LIST_SIZE	= 7
 
   # Gtk2Bookmarks will give the top tags, but
   # one can override with one's own initial tags.

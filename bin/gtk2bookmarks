@@ -10,9 +10,33 @@ Gtk2App.init( {
         } )
 
 require 'gtk2bookmarks/bookmarks'
-bookmarks = Bookmarks.new(Configuration::BOOKMARK_FILES)
+include Configuration
+bookmarks = Bookmarks.new(BOOKMARK_FILES)
 
-Gtk2App.dock_menu.append_menu_item('Hello'){}
+bookmarks.top_tags.each{|tag|
+  item = Gtk2App.dock_menu.append_menu_item(tag)
+  item.set_submenu( Gtk2App::Menu.new )
+  links = []
+  bookmarks.each{|bookmark| links.push([bookmark[Bookmarks::TITLE],bookmark[Bookmarks::LINK]]) if bookmark[Bookmarks::SUBJECT].include?(tag) }
+  if links.length > LIST_SIZE then
+    bookmarks.top_tags(tag).each{|gat|
+      if !(gat == tag) then
+        item2 = item.submenu.append_menu_item(gat)
+        item2.set_submenu( Gtk2App::Menu.new )
+        links = []
+        bookmarks.each{|bookmark| links.push([bookmark[Bookmarks::TITLE],bookmark[Bookmarks::LINK]]) if bookmark[Bookmarks::SUBJECT].include?(tag) && bookmark[Bookmarks::SUBJECT].include?(gat) }
+        if links.length > LIST_SIZE then
+          item2.append_menu_item('Run'){ Gtk2App.activate }
+        else
+          links.each{|title,link| item2.submenu.append_menu_item(title){ system("#{APP[:browser]} '#{link}' &") } }
+        end
+      end
+    }
+  else
+    links.each{|title,link| item.submenu.append_menu_item(title){ system("#{APP[:browser]} '#{link}' &") } }
+  end
+  item.submenu.show_all
+}
 Gtk2App.dock_menu.show_all
 
 require 'gtk2bookmarks/gtk2bookmarksapp'
