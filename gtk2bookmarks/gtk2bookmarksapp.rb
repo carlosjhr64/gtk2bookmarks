@@ -2,7 +2,7 @@ require 'timeout'
 require 'net/http'
 require 'gtk2applib/gtk2_app_widgets_entry'
 require 'gtk2applib/gtk2_app_widgets_button'
-require 'gtk2bookmarks/bookmarks'
+#require 'gtk2bookmarks/bookmarks'
 
 class Gtk2BookmarksApp
   include Configuration
@@ -52,13 +52,7 @@ class Gtk2BookmarksApp
     #top_tags_buttons.show_all
   end
 
-  def initialize(window)
-    # Aggregate available bookmarks
-    bookmarks = Bookmarks.new(BOOKMARK_FILES)
-    rdf_exist = File.exist?(EPIPHANY_RDF)
-    rdf_checked = (rdf_exist)? Time.now: nil
-    mtime = (rdf_exist)? File.mtime(EPIPHANY_RDF): nil
-
+  def initialize(window,bookmarks)
     # Delete links to missing files
     bookmarks.delete_if {|bookmark| (bookmark[Bookmarks::LINK] =~ /^file:\/\/(.*)$/) && !File.exist?($1) }
 
@@ -108,13 +102,8 @@ class Gtk2BookmarksApp
     Gtk2App.pack(list,vbox)
 
     relist = proc { # ...relist defined
-      if rdf_exist && (Time.now - rdf_checked > RDF_CHECK_TIME) then # just to avoid immediate re-checks
-        fmt = File.mtime(EPIPHANY_RDF)
-        if fmt > mtime then
-          mtime = fmt
-          bookmarks = Bookmarks.new(BOOKMARK_FILES)
-        end
-        rdf_checked = Time.now
+      if bookmarks.conditional_reload then
+        bookmarks.delete_if {|bookmark| (bookmark[Bookmarks::LINK] =~ /^file:\/\/(.*)$/) && !File.exist?($1) }
       end
       entry_text = entry.text
       bookmarks.sort!(entry_text)

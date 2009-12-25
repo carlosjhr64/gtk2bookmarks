@@ -9,6 +9,10 @@ Gtk2App.init( {
         :FILE           => __FILE__,
         } )
 
+require 'gtk2bookmarks/bookmarks'
+bookmarks = Bookmarks.new(Configuration::BOOKMARK_FILES)
+
+require 'gtk2bookmarks/gtk2bookmarksapp'
 about = {
 	'authors'	=> ['carlosjhr64@gmail.com'],
 	'website'	=> 'http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks',
@@ -17,8 +21,7 @@ about = {
 	'copyright'	=> '2009-Dec-28',
 	}
 Gtk2App.main_window(about) do |window|
-  require 'gtk2bookmarks/gtk2bookmarksapp'
-  Gtk2BookmarksApp.new(window)
+  Gtk2BookmarksApp.new(window,bookmarks)
 end
 
 Gtk2App.finalize

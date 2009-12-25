@@ -98,12 +98,11 @@ class Bookmarks < Array
     end
   end
 
-  def initialize(files)
-    super()
-    xml = nil
-
+  def _load
     @seen = {}
-    files.each do |file|
+
+    xml = nil
+    @files.each do |file|
       if file =~ /\.rdf$/ then
         # RDFs epiphany
         File.open(file, 'r'){|fh| xml = REXML::Document.new(fh) }
@@ -117,7 +116,40 @@ class Bookmarks < Array
         get_xml_bookmarks( xml.root )
       end
     end
+
     @seen = nil # to GC
+  end
+
+  def reload
+    self.clear
+     _load
+  end
+
+  def conditional_reload
+    ret = false
+
+    if @rdf_exist && (Time.now - @rdf_checked > Configuration::RDF_CHECK_TIME) then # just to avoid immediate re-checks
+      fmt = File.mtime(Configuration::EPIPHANY_RDF)
+      if fmt > @mtime then
+        @mtime = fmt
+        reload
+        ret = true
+      end
+      @rdf_checked = Time.now
+    end
+
+    return ret
+  end
+
+  def initialize(files)
+    super()
+
+    @rdf_exist = File.exist?(Configuration::EPIPHANY_RDF)
+    @rdf_checked = (@rdf_exist)? Time.now: nil
+    @mtime = (@rdf_exist)? File.mtime(Configuration::EPIPHANY_RDF): nil
+
+    @files = files
+    _load
   end
 
   def sort!(query)

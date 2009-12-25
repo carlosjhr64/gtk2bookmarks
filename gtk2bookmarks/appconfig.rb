@@ -6,7 +6,7 @@ module Configuration
   LIST_SIZE	= 10
 
   # Gtk2Bookmarks will give the top tags, but
-  # one can overide with one's own initial tags.
+  # one can override with one's own initial tags.
   INITIAL_TAGS	= nil  # ['Weather','Email']
   TAGS_EOI	= 9 # Number of tags - 1 (End Of Index)
 
@@ -18,9 +18,9 @@ module Configuration
   DEFAULT_FG_COLOR		= COLOR[:black]
 
   # Time to wait for a head request
-  HTTP_TIMEOUT = 15
+  HTTP_TIMEOUT = 15	# seconds
   # Time to wait before rechecking the RDF bookmarks file
-  RDF_CHECK_TIME = 60
+  RDF_CHECK_TIME = 60	# seconds
 
   ENTRY_OPTIONS = {:width=>500}.freeze
 
