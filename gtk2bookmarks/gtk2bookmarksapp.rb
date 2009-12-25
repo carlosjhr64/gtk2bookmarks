@@ -27,24 +27,10 @@ class Gtk2BookmarksApp
     end
   end
 
-  def top_tags(bookmarks,match=nil)
-    tags = Hash.new(0)
-    bookmarks.each{|bookmark|
-      if !match || bookmark[Bookmarks::SUBJECT].include?(match) then
-        bookmark[Bookmarks::SUBJECT].uniq.each{|subject|
-          tags[subject] += 1
-        }
-      end
-    }
-    # return top 10 sorted keys TBD: Configurable?
-    ret = tags.sort{|a,b| b[1]<=>a[1]}.map{|ab| ab.first}[0..TAGS_EOI]
-    (INITIAL_TAGS && !match)? INITIAL_TAGS.concat(ret).uniq[0..TAGS_EOI]: ret
-  end
-
   def overwrite_tags_buttons(bookmarks,top_tags_buttons,tag=nil)
     overwrites = top_tags_buttons.children
     new_tags = overwrites.map{|x| x.label}
-    new_tags = top_tags(bookmarks,tag).concat(new_tags).uniq[0..TAGS_EOI]
+    new_tags = bookmarks.top_tags(tag).concat(new_tags).uniq[0..TAGS_EOI]
     new_tags.each{|gat|
       overwrite = overwrites.shift
       overwrite.label = overwrite.value = gat
@@ -79,7 +65,7 @@ class Gtk2BookmarksApp
 
     # Top Tags
     top_tags_buttons = Gtk::HBox.new
-    top_tags(bookmarks).each{|tag|
+    bookmarks.top_tags.each{|tag|
       Gtk2App::Button.new(tag,top_tags_buttons){|value|
         entry.text = entry.text + ' ' + value
         overwrite_tags_buttons(bookmarks,top_tags_buttons,value)

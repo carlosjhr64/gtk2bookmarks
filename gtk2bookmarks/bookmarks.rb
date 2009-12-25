@@ -158,4 +158,18 @@ class Bookmarks < Array
       b[SORT] <=> a[SORT]
     }
   end
+
+  def top_tags(match=nil)
+    tags = Hash.new(0)
+    self.each{|bookmark|
+      if !match || bookmark[Bookmarks::SUBJECT].include?(match) then
+        bookmark[Bookmarks::SUBJECT].uniq.each{|subject|
+          tags[subject] += 1
+        }
+      end
+    }
+    # return top 10 sorted keys TBD: Configurable?
+    ret = tags.sort{|a,b| b[1]<=>a[1]}.map{|ab| ab.first}[0..Configuration::TAGS_EOI]
+    (Configuration::INITIAL_TAGS && !match)? Configuration::INITIAL_TAGS.concat(ret).uniq[0..Configuration::TAGS_EOI]: ret
+  end
 end

@@ -12,6 +12,9 @@ Gtk2App.init( {
 require 'gtk2bookmarks/bookmarks'
 bookmarks = Bookmarks.new(Configuration::BOOKMARK_FILES)
 
+Gtk2App.dock_menu.append_menu_item('Hello'){}
+Gtk2App.dock_menu.show_all
+
 require 'gtk2bookmarks/gtk2bookmarksapp'
 about = {
 	'authors'	=> ['carlosjhr64@gmail.com'],
