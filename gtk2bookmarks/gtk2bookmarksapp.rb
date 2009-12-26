@@ -35,13 +35,11 @@ def self.dock_menu(bookmarks)
             item2.submenu.append_menu_item('Run'){ Gtk2App.activate }
           else
             Gtk2Bookmarks._append_menum_item_boomkmark(item2,links)
-            #links.each{|bookmark| item2.submenu.append_menu_item(bookmark[Bookmarks::TITLE]){ Gtk2Bookmarks.system_call(bookmark) } }
           end
         end
       }
     else
       Gtk2Bookmarks._append_menum_item_boomkmark(item,links)
-      #links.each{|title,link| item.submenu.append_menu_item(bookmark[Bookmarks::TITLE]){ Gtk2Bookmarks.system_call(bookmark) } }
     end
     item.submenu.show_all
   }
@@ -62,14 +60,18 @@ def self.head(bookmark)
       Timeout::timeout(HTTP_TIMEOUT) {
         Net::HTTP.start(host, 80) {|http|
           response = http.head(path)
-          bookmark[Bookmarks::RESPONSE] = (response.message=~/Not\s+Found/i)? nil: response.message
+          $stderr.puts response.message if $trace
+          if response.message=~/Not\s+Found/i then
+            Bookmarks::HITS[bookmark[Bookmarks::LINK]] -= 2
+          else
+            Bookmarks::HITS[bookmark[Bookmarks::LINK]] += 1
+          end
         }
       }
     rescue Exception
       puts_bang!
-      bookmark[Bookmarks::RESPONSE] = nil
+      Bookmarks::HITS[bookmark[Bookmarks::LINK]] -= 1
     end
-    $stderr.puts bookmark[Bookmarks::RESPONSE] if $trace
   end
 end
 

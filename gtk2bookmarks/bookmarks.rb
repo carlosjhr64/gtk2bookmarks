@@ -11,9 +11,13 @@ class Bookmarks < Array
   LINK		= 2
   SUBJECT	= 3 # AKA TAGS
   KEYWORDS	= 4
-  RESPONSE	= 5
 
+  HITS		= Hash.new(0)
   HREFX		= Regexp.new( '<A\s+HREF="([^"]*)"[^>]*>([^<>]*?)<\/A>', Regexp::IGNORECASE )
+
+  def _self_push(title,link,tags=[])
+    self.push([ 0, title, link, tags, [] ])
+  end
 
  
   # there's got to be a better way!!! :-?? 
@@ -32,7 +36,7 @@ class Bookmarks < Array
               @seen[link][KEYWORDS].delete_if{|x| @seen[link][TITLE].include?(x)}
             else
               # Keywords are added later on duplicate links
-              self.push([ 0, title, link, tags, [], '' ])
+              _self_push(title,link,tags)
               @seen[link] = self.last
             end
           end
@@ -69,7 +73,7 @@ class Bookmarks < Array
           @seen[link][KEYWORDS].delete_if{|x| @seen[link][TITLE].include?(x)}
         else
           # Keywords are added later on duplicate links
-          self.push([ 0,  title, link, entry[SUBJECT_].dup, [], '' ]) 
+          _self_push(title,link,entry[SUBJECT_].dup)
           @seen[link] = self.last
         end
       end
@@ -90,7 +94,7 @@ class Bookmarks < Array
           @seen[link][KEYWORDS].delete_if{|x| @seen[link][TITLE].include?(x)}
         else
           # Keywords are added later on duplicate links
-          self.push([ 0, title, link, [], [], '' ]) 
+          _self_push(title,link)
           @seen[link] = self.last
         end
         buffer = md.post_match
@@ -164,7 +168,7 @@ class Bookmarks < Array
     self.each{|bookmark|
       if !match || bookmark[SUBJECT].include?(match) then
         bookmark[SUBJECT].uniq.each{|subject|
-          tags[subject] += 1
+          tags[subject] += 1 + HITS[bookmark[LINK]]
         }
       end
     }

@@ -11,9 +11,9 @@ module Configuration
   TAGS_EOI	= 9 # Number of tags - 1 (End Of Index)
 
   # These are the color codes for search results
-  LOW_THRESH_HOLD		= 1.0
+  LOW_THRESH_HOLD		= 2.0
   LOW_THRESH_HOLD_COLOR		= COLOR[:gray]
-  HIGH_THRESH_HOLD		= 30.0
+  HIGH_THRESH_HOLD		= 45.0
   HIGH_THRESH_HOLD_COLOR	= COLOR[:navy]
   DEFAULT_FG_COLOR		= COLOR[:black]
 
@@ -89,7 +89,7 @@ module Configuration
 
   # Here one can customize how the rankings is done.
   def self.hits_valuation(bookmarks, query)
-    # Split the search string, query, into individual words of at least three letters.
+    # Split the search string, query, into individual words of at least two letters.
     # Note how the order is reversed, this is explained later, below...
     query_split = query.split(/\W+/).delete_if{|x| x.length<2}.reverse
     tokens = (query_split.length > 0)
@@ -138,11 +138,8 @@ module Configuration
           entry[Bookmarks::SORT] += 2 if link=~rgxb
           entry[Bookmarks::SORT] += 1 if keywords=~rgxb
         }
-        # Promotion/demotion based on head
-        entry[Bookmarks::SORT] *= 1.1	if entry[Bookmarks::RESPONSE] && entry[Bookmarks::RESPONSE] =~ /^OK$/i
-        entry[Bookmarks::SORT] *= 1.1	if entry[Bookmarks::RESPONSE] && entry[Bookmarks::RESPONSE] =~ /^Found$/i
       end
-      entry[Bookmarks::SORT] *= 0.9	if entry[Bookmarks::RESPONSE].nil?
+      entry[Bookmarks::SORT] *= 2.0 / (1.0 + Math.exp(-Bookmarks::HITS[entry[Bookmarks::LINK]]))
     }
     # Now bookmarks can be sorted by its SORT value...
   end
