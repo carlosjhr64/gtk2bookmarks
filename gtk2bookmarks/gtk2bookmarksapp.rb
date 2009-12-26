@@ -4,28 +4,77 @@ require 'gtk2applib/gtk2_app_widgets_entry'
 require 'gtk2applib/gtk2_app_widgets_button'
 #require 'gtk2bookmarks/bookmarks'
 
-class Gtk2BookmarksApp
-  include Configuration
+module Gtk2Bookmarks
 
-  def head(bookmark)
-    if bookmark[Bookmarks::LINK] =~ /^http:\/\/([^\/]+)(\/.*)?$/ then
-      begin
-        host = $1
-        path = ($2)? $2: '/'
-        response = nil
-        Timeout::timeout(HTTP_TIMEOUT) {
-          Net::HTTP.start(host, 80) {|http|
-            response = http.head(path)
-            bookmark[Bookmarks::RESPONSE] = (response.message=~/Not\s+Found/i)? nil: response.message
-          }
-        }
-      rescue Exception
-        puts_bang!
-        bookmark[Bookmarks::RESPONSE] = nil
-      end
-      $stderr.puts bookmark[Bookmarks::RESPONSE] if $trace
-    end
+def self.conditional_reload(bookmarks)
+  if bookmarks.conditional_reload then
+    bookmarks.delete_if {|bookmark| (bookmark[Bookmarks::LINK] =~ /^file:\/\/(.*)$/) && !File.exist?($1) }
+    Gtk2Bookmarks.dock_menu(bookmarks)
   end
+end
+
+def self._append_menum_item_boomkmark(menu_item,links)
+  links.each{|bookmark| menu_item.submenu.append_menu_item(bookmark[Bookmarks::TITLE]){ Gtk2Bookmarks.system_call(bookmark) } }
+end
+
+def self.dock_menu(bookmarks)
+  Gtk2App.clear_dock_menu
+  bookmarks.top_tags.each{|tag|
+    item = Gtk2App.dock_menu.append_menu_item(tag)
+    item.set_submenu( Gtk2App::Menu.new )
+    links = []
+    bookmarks.each{|bookmark| links.push(bookmark) if bookmark[Bookmarks::SUBJECT].include?(tag) }
+    if links.length > LIST_SIZE then
+      bookmarks.top_tags(tag).each{|gat|
+        if !(gat == tag) then
+          item2 = item.submenu.append_menu_item(gat)
+          item2.set_submenu( Gtk2App::Menu.new )
+          links = []
+          bookmarks.each{|bookmark| links.push(bookmark) if bookmark[Bookmarks::SUBJECT].include?(tag) && bookmark[Bookmarks::SUBJECT].include?(gat) }
+          if links.length > LIST_SIZE then
+            item2.append_menu_item('Run'){ Gtk2App.activate }
+          else
+            Gtk2Bookmarks._append_menum_item_boomkmark(item2,links)
+            #links.each{|bookmark| item2.submenu.append_menu_item(bookmark[Bookmarks::TITLE]){ Gtk2Bookmarks.system_call(bookmark) } }
+          end
+        end
+      }
+    else
+      Gtk2Bookmarks._append_menum_item_boomkmark(item,links)
+      #links.each{|title,link| item.submenu.append_menu_item(bookmark[Bookmarks::TITLE]){ Gtk2Bookmarks.system_call(bookmark) } }
+    end
+    item.submenu.show_all
+  }
+  Gtk2App.dock_menu.show_all
+end
+
+def self.system_call(bookmark)
+  system("#{APP[:browser]} '#{bookmark[Bookmarks::LINK]}' &")
+  Gtk2Bookmarks.head(bookmark)
+end
+
+def self.head(bookmark)
+  if bookmark[Bookmarks::LINK] =~ /^http:\/\/([^\/]+)(\/.*)?$/ then
+    begin
+      host = $1
+      path = ($2)? $2: '/'
+      response = nil
+      Timeout::timeout(HTTP_TIMEOUT) {
+        Net::HTTP.start(host, 80) {|http|
+          response = http.head(path)
+          bookmark[Bookmarks::RESPONSE] = (response.message=~/Not\s+Found/i)? nil: response.message
+        }
+      }
+    rescue Exception
+      puts_bang!
+      bookmark[Bookmarks::RESPONSE] = nil
+    end
+    $stderr.puts bookmark[Bookmarks::RESPONSE] if $trace
+  end
+end
+
+class App
+  include Configuration
 
   def overwrite_tags_buttons(bookmarks,top_tags_buttons,tag=nil)
     overwrites = top_tags_buttons.children
@@ -77,10 +126,7 @@ class Gtk2BookmarksApp
     list = Gtk::VBox.new
     LIST_SIZE.times do |i|
       hbox2 = Gtk::HBox.new
-      button2 = Gtk2App::Button.new(IMAGE[:go],hbox2){|bookmark|
-	system("#{APP[:browser]} '#{bookmark[Bookmarks::LINK]}' &")
-        head(bookmark)
-      }
+      button2 = Gtk2App::Button.new(IMAGE[:go],hbox2){|bookmark| Gtk2Bookmarks.system_call(bookmark)}
       label = Gtk2App::Label.new('',hbox2,{:wrap=>false})
       link_label(bookmarks[i],button2,label)
       Gtk2App.pack(hbox2,list)
@@ -88,9 +134,7 @@ class Gtk2BookmarksApp
     Gtk2App.pack(list,vbox)
 
     relist = proc { # ...relist defined
-      if bookmarks.conditional_reload then
-        bookmarks.delete_if {|bookmark| (bookmark[Bookmarks::LINK] =~ /^file:\/\/(.*)$/) && !File.exist?($1) }
-      end
+      Gtk2Bookmarks.conditional_reload(bookmarks)
       entry_text = entry.text
       bookmarks.sort!(entry_text)
       LIST_SIZE.times{|i| link_label(bookmarks[i],*list.children[i].children)}
@@ -104,4 +148,5 @@ class Gtk2BookmarksApp
     label.modify_fg(Gtk::STATE_NORMAL,
 	(sort_value < LOW_THRESH_HOLD)? LOW_THRESH_HOLD_COLOR: (sort_value > HIGH_THRESH_HOLD)? HIGH_THRESH_HOLD_COLOR: DEFAULT_FG_COLOR)
   end
+end
 end

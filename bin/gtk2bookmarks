@@ -13,33 +13,10 @@ require 'gtk2bookmarks/bookmarks'
 include Configuration
 bookmarks = Bookmarks.new(BOOKMARK_FILES)
 
-bookmarks.top_tags.each{|tag|
-  item = Gtk2App.dock_menu.append_menu_item(tag)
-  item.set_submenu( Gtk2App::Menu.new )
-  links = []
-  bookmarks.each{|bookmark| links.push([bookmark[Bookmarks::TITLE],bookmark[Bookmarks::LINK]]) if bookmark[Bookmarks::SUBJECT].include?(tag) }
-  if links.length > LIST_SIZE then
-    bookmarks.top_tags(tag).each{|gat|
-      if !(gat == tag) then
-        item2 = item.submenu.append_menu_item(gat)
-        item2.set_submenu( Gtk2App::Menu.new )
-        links = []
-        bookmarks.each{|bookmark| links.push([bookmark[Bookmarks::TITLE],bookmark[Bookmarks::LINK]]) if bookmark[Bookmarks::SUBJECT].include?(tag) && bookmark[Bookmarks::SUBJECT].include?(gat) }
-        if links.length > LIST_SIZE then
-          item2.append_menu_item('Run'){ Gtk2App.activate }
-        else
-          links.each{|title,link| item2.submenu.append_menu_item(title){ system("#{APP[:browser]} '#{link}' &") } }
-        end
-      end
-    }
-  else
-    links.each{|title,link| item.submenu.append_menu_item(title){ system("#{APP[:browser]} '#{link}' &") } }
-  end
-  item.submenu.show_all
-}
-Gtk2App.dock_menu.show_all
-
 require 'gtk2bookmarks/gtk2bookmarksapp'
+Gtk2Bookmarks.dock_menu(bookmarks)
+Gtk2App.prep_icon_popup_menu = proc { Gtk2Bookmarks.conditional_reload(bookmarks) }
+
 about = {
 	'authors'	=> ['carlosjhr64@gmail.com'],
 	'website'	=> 'http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks',
@@ -48,7 +25,7 @@ about = {
 	'copyright'	=> '2009-Dec-28',
 	}
 Gtk2App.main_window(about) do |window|
-  Gtk2BookmarksApp.new(window,bookmarks)
+  Gtk2Bookmarks::App.new(window,bookmarks)
 end
 
 Gtk2App.finalize
