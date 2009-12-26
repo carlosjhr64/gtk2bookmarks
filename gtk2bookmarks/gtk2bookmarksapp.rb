@@ -32,7 +32,7 @@ def self.dock_menu(bookmarks)
           links = []
           bookmarks.each{|bookmark| links.push(bookmark) if bookmark[Bookmarks::SUBJECT].include?(tag) && bookmark[Bookmarks::SUBJECT].include?(gat) }
           if links.length > LIST_SIZE then
-            item2.append_menu_item('Run'){ Gtk2App.activate }
+            item2.submenu.append_menu_item('Run'){ Gtk2App.activate }
           else
             Gtk2Bookmarks._append_menum_item_boomkmark(item2,links)
             #links.each{|bookmark| item2.submenu.append_menu_item(bookmark[Bookmarks::TITLE]){ Gtk2Bookmarks.system_call(bookmark) } }
