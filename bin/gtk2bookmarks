@@ -10,6 +10,8 @@ Gtk2App.init( {
         } )
 
 require 'gtk2bookmarks/bookmarks'
+Bookmarks.load_hits
+
 include Configuration
 bookmarks = Bookmarks.new(BOOKMARK_FILES)
 
@@ -28,4 +30,5 @@ Gtk2App.main_window(about) do |window|
   Gtk2Bookmarks::App.new(window,bookmarks)
 end
 
+Bookmarks.dump_hits
 Gtk2App.finalize

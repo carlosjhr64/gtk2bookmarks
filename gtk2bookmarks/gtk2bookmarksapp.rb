@@ -62,16 +62,19 @@ def self.head(bookmark)
           response = http.head(path)
           $stderr.puts response.message if $trace
           if response.message=~/Not\s+Found/i then
-            Bookmarks::HITS[bookmark[Bookmarks::LINK]] -= 2
+            Bookmarks::HITS[bookmark[Bookmarks::LINK]] -= 2.0
           else
-            Bookmarks::HITS[bookmark[Bookmarks::LINK]] += 1
+            Bookmarks::HITS[bookmark[Bookmarks::LINK]] += 1.0
           end
         }
       }
     rescue Exception
       puts_bang!
-      Bookmarks::HITS[bookmark[Bookmarks::LINK]] -= 1
+      Bookmarks::HITS[bookmark[Bookmarks::LINK]] -= 1.0
     end
+  else
+    # assume success on the rest ( https, files, ...)
+    Bookmarks::HITS[bookmark[Bookmarks::LINK]] += 1.0
   end
 end
 

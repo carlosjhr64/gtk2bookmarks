@@ -12,11 +12,24 @@ class Bookmarks < Array
   SUBJECT	= 3 # AKA TAGS
   KEYWORDS	= 4
 
-  HITS		= Hash.new(0)
   HREFX		= Regexp.new( '<A\s+HREF="([^"]*)"[^>]*>([^<>]*?)<\/A>', Regexp::IGNORECASE )
 
+  HITS		= Hash.new(0.0)
+  def self.load_hits
+    File.open(Configuration::HITS_FILE,'r'){|fh|
+      fh.each{|line|
+        k,v = line.strip.split(/\s+/)
+        HITS[k] = v.to_f
+      }
+    }	if File.exist?(Configuration::HITS_FILE)
+  end
+  def self.dump_hits
+    File.rename(Configuration::HITS_FILE,Configuration::HITS_FILE+'.bak') if File.exist?(Configuration::HITS_FILE)
+    File.open(Configuration::HITS_FILE,'w'){|fh| HITS.each{|k,v| fh.puts "#{k}\t#{Configuration::ATTENUATION*v}"} }
+  end
+
   def _self_push(title,link,tags=[])
-    self.push([ 0, title, link, tags, [] ])
+    self.push([ 0.0, title, link, tags, [] ])
   end
 
  
@@ -168,7 +181,7 @@ class Bookmarks < Array
     self.each{|bookmark|
       if !match || bookmark[SUBJECT].include?(match) then
         bookmark[SUBJECT].uniq.each{|subject|
-          tags[subject] += 1 + HITS[bookmark[LINK]]
+          tags[subject] += 1.0 + HITS[bookmark[LINK]]
         }
       end
     }

@@ -87,6 +87,10 @@ module Configuration
   # Close to icon
   MENU[:close] = '_Close'
 
+  HITS_FILE = UserSpace::DIRECTORY + '/hits.dat'
+  # When the hits data is saved, it's attenuated by this factor.
+  ATTENUATION = 0.8
+
   # Here one can customize how the rankings is done.
   def self.hits_valuation(bookmarks, query)
     # Split the search string, query, into individual words of at least two letters.
@@ -117,26 +121,26 @@ module Configuration
         # followed by the title hits, then
         # least by url link hits.
         rgxs.each{|rgx|
-          entry[Bookmarks::SORT] += 8 if tags=~rgx
-          entry[Bookmarks::SORT] += 4 if title=~rgx
-          entry[Bookmarks::SORT] += 2 if link=~rgx
-          entry[Bookmarks::SORT] += 1 if keywords=~rgx
+          entry[Bookmarks::SORT] += 8.0 if tags=~rgx
+          entry[Bookmarks::SORT] += 4.0 if title=~rgx
+          entry[Bookmarks::SORT] += 2.0 if link=~rgx
+          entry[Bookmarks::SORT] += 1.0 if keywords=~rgx
         }
         # ...here is why the order got reversed, above.
         # An increasing kicker, i, is a added making the first words in the query more relevant.
         i = 0
         rgxis.each{|rgxi|
-          entry[Bookmarks::SORT] += 8+i if tags=~rgxi
-          entry[Bookmarks::SORT] += 4+i if title=~rgxi
-          entry[Bookmarks::SORT] += 2+i if link=~rgxi
-          entry[Bookmarks::SORT] += 1+i if keywords=~rgxi
+          entry[Bookmarks::SORT] += 8.0+i if tags=~rgxi
+          entry[Bookmarks::SORT] += 4.0+i if title=~rgxi
+          entry[Bookmarks::SORT] += 2.0+i if link=~rgxi
+          entry[Bookmarks::SORT] += 1.0+i if keywords=~rgxi
           i += 1
         }
         rgxbs.each{|rgxb|
-          entry[Bookmarks::SORT] += 8 if tags=~rgxb
-          entry[Bookmarks::SORT] += 4 if title=~rgxb
-          entry[Bookmarks::SORT] += 2 if link=~rgxb
-          entry[Bookmarks::SORT] += 1 if keywords=~rgxb
+          entry[Bookmarks::SORT] += 8.0 if tags=~rgxb
+          entry[Bookmarks::SORT] += 4.0 if title=~rgxb
+          entry[Bookmarks::SORT] += 2.0 if link=~rgxb
+          entry[Bookmarks::SORT] += 1.0 if keywords=~rgxb
         }
       end
       entry[Bookmarks::SORT] *= 2.0 / (1.0 + Math.exp(-Bookmarks::HITS[entry[Bookmarks::LINK]]))
