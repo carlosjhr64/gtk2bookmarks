@@ -5,6 +5,13 @@ require 'gtk2applib/gtk2_app_widgets_button'
 #require 'gtk2bookmarks/bookmarks'
 
 module Gtk2Bookmarks
+@@entry_text = ''
+def self.entry_text
+  @@entry_text
+end
+def self.entry_text=(v)
+  @@entry_text=v
+end
 
 def self.conditional_reload(bookmarks)
   if bookmarks.conditional_reload then
@@ -32,11 +39,18 @@ def self.dock_menu(bookmarks)
           links = []
           bookmarks.each{|bookmark| links.push(bookmark) if bookmark[Bookmarks::SUBJECT].include?(tag) && bookmark[Bookmarks::SUBJECT].include?(gat) }
           if links.length > LIST_SIZE then
-            item2.submenu.append_menu_item('Run'){ Gtk2App.activate }
+            item2.submenu.append_menu_item('Run'){
+              Gtk2Bookmarks.entry_text = "#{tag} #{gat}"
+              Gtk2App.activate
+            }
           else
             Gtk2Bookmarks._append_menum_item_boomkmark(item2,links)
           end
         end
+      }
+      item.submenu.append_menu_item('Run'){
+        Gtk2Bookmarks.entry_text = tag
+        Gtk2App.activate
       }
     else
       Gtk2Bookmarks._append_menum_item_boomkmark(item,links)
@@ -62,7 +76,7 @@ def self.head(bookmark)
           response = http.head(path)
           $stderr.puts response.message if $trace
           if response.message=~/Not\s+Found/i then
-            Bookmarks::HITS[bookmark[Bookmarks::LINK]] -= 2.0
+            Bookmarks::HITS[bookmark[Bookmarks::LINK]] = -1.0
           else
             Bookmarks::HITS[bookmark[Bookmarks::LINK]] += 1.0
           end
@@ -70,7 +84,7 @@ def self.head(bookmark)
       }
     rescue Exception
       puts_bang!
-      Bookmarks::HITS[bookmark[Bookmarks::LINK]] -= 1.0
+      Bookmarks::HITS[bookmark[Bookmarks::LINK]] *= Configuration::ATTENUATION
     end
   else
     # assume success on the rest ( https, files, ...)
@@ -100,15 +114,14 @@ class App
     scrolled = Gtk2App::ScrolledWindow.new(vbox)
     window.add(scrolled)
 
-    entry_text = ''
-    bookmarks.sort!(entry_text)
+    bookmarks.sort!(Gtk2Bookmarks.entry_text)
 
     # About to be defined...
     top_tags_buttons = relist = nil
 
     hbox1 = Gtk::HBox.new
     button1 = Gtk2App::Button.new(IMAGE[:click],hbox1){ relist.call }
-    entry = Gtk2App::Entry.new('',hbox1,ENTRY_OPTIONS)
+    entry = Gtk2App::Entry.new(Gtk2Bookmarks.entry_text,hbox1,ENTRY_OPTIONS)
     entry.signal_connect('activate'){ relist.call }
     Gtk2App::Button.new('Clear',hbox1){
       entry.text = ''
@@ -140,8 +153,7 @@ class App
 
     relist = proc { # ...relist defined
       Gtk2Bookmarks.conditional_reload(bookmarks)
-      entry_text = entry.text
-      bookmarks.sort!(entry_text)
+      bookmarks.sort!(Gtk2Bookmarks.entry_text=entry.text)
       LIST_SIZE.times{|i| link_label(bookmarks[i],*list.children[i].children)}
     }
   end
