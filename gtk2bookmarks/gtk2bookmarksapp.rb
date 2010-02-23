@@ -143,6 +143,7 @@ class App
 
     list = Gtk::VBox.new
     LIST_SIZE.times do |i|
+      break if !bookmarks[i] # NEW
       hbox2 = Gtk::HBox.new
       button2 = Gtk2App::Button.new(IMAGE[:go],hbox2){|bookmark| Gtk2Bookmarks.system_call(bookmark)}
       label = Gtk2App::Label.new('',hbox2,{:wrap=>false})
@@ -154,7 +155,10 @@ class App
     relist = proc { # ...relist defined
       Gtk2Bookmarks.conditional_reload(bookmarks)
       bookmarks.sort!(Gtk2Bookmarks.entry_text=entry.text)
-      LIST_SIZE.times{|i| link_label(bookmarks[i],*list.children[i].children)}
+      LIST_SIZE.times{|i|
+        break if !bookmarks[i] # NEW
+        link_label(bookmarks[i],*list.children[i].children)
+      }
     }
   end
 

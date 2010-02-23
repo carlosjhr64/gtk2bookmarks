@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-gem 'gtk2applib', '~> 4.2.0'
+gem 'gtk2applib', '~> 5.0.0'
 require 'gtk2applib/gtk2_app'
 
 Gtk2App.init( {
