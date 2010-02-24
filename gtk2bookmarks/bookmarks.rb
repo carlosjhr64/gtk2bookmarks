@@ -115,6 +115,32 @@ class Bookmarks < Array
     end
   end
 
+  def get_json_bookmarks(data,record,type)
+    clss = data.class
+    if clss == Hash then
+      data.keys.each{|key|
+        get_json_bookmarks(data[key],record,key)
+      }
+    elsif clss == Array then
+      data.each{|datum|
+        get_json_bookmarks(datum,record,type)
+        if record['type'] == 'url' then
+          title,link = record['name'],record['url']
+          if @seen[link] then
+            @seen[link][KEYWORDS].concat( title.split(/\W+/) )
+            @seen[link][KEYWORDS].uniq!
+            @seen[link][KEYWORDS].delete_if{|x| @seen[link][TITLE].include?(x)}
+          else
+            _self_push(title,link)
+            @seen[link] = self.last
+          end
+        end
+      }
+    else
+      record[type] = data
+    end
+  end
+
   def _load
     @seen = {}
 
@@ -131,6 +157,11 @@ class Bookmarks < Array
         # XML microb
         File.open(file, 'r'){|fh| xml = REXML::Document.new(fh)}
         get_xml_bookmarks( xml.root )
+      elsif file =~ /\/Bookmarks$/ then
+        # Assume Json
+        require 'json'
+        data = JSON.parse( File.read(file) )
+        get_json_bookmarks(data,{},nil)
       end
     end
 

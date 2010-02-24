@@ -29,7 +29,8 @@ module Configuration
 
   # Epiphany's bookmarks RDF file
   # This is the main file and bookmarks get updated whenever this file is updated.
-  EPIPHANY_RDF = ENV['HOME']+'/.gnome2/epiphany/bookmarks.rdf'
+  home = ENV['HOME']
+  EPIPHANY_RDF = home+'/.gnome2/epiphany/bookmarks.rdf'
   BOOKMARK_FILES.push(EPIPHANY_RDF) if File.exist?(EPIPHANY_RDF)
   # RDF file in user space?
   # This gives the option to copy one's linux epiphany bookmarks on maemo.
@@ -41,7 +42,6 @@ module Configuration
 # # One can add to BOOKMARK_FILES <exports>.html files
 # # see the code below for examples.
 
-# home = ENV['HOME']
 # # (older) Firefox's bookmarks HTML files
 # mozilla = home+'/.mozilla'
 # if File.exists?(mozilla) then
@@ -68,6 +68,13 @@ module Configuration
 #     if file =~ /\w*bookmarks\w*.xml$/i then
 #       BOOKMARK_FILES.push(file)
 #     end
+#   end
+# end
+# # chrome bookmarks
+# chrome_bookmarks = home+'/.config/google-chrome'
+# if File.exist?(chrome_bookmarks) then
+#   Find.find(chrome_bookmarks) do |file|
+#     BOOKMARK_FILES.push(file) if file =~ /\/Bookmarks$/
 #   end
 # end
 
