@@ -20,11 +20,11 @@ Gtk2Bookmarks.dock_menu(bookmarks)
 Gtk2App.prep_icon_popup_menu = proc { Gtk2Bookmarks.conditional_reload(bookmarks) }
 
 about = {
-	'authors'	=> ['carlosjhr64@gmail.com'],
-	'website'	=> 'http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks',
-	'website-label'	=> 'Ruby-Gnome Bookmarks Blog',
-	'license'	=> 'GPL',
-	'copyright'	=> '2009-Dec-28',
+	:authors	=> ['carlosjhr64@gmail.com'],
+	:website	=> 'http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks',
+	:website_label	=> 'Ruby-Gnome Bookmarks Blog',
+	:license	=> 'GPL',
+	:copyright	=> '2010-02-24 10:03:36',
 	}
 Gtk2App.main_window(about) do |window|
   Gtk2Bookmarks::App.new(window,bookmarks)
