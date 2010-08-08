@@ -61,7 +61,7 @@ class Data < Hash
       }
     end
     if location = response.header['location'] then
-      response.header['location'] = (uri.host + location) if location=~/^\//
+      response.header['location'] = ('http://' + uri.host + location) if location=~/^\//
     end
     return response
   end
@@ -117,7 +117,7 @@ class Data < Hash
     rescue Exception
       # don't overwrite, probably some network error
       self[url] = nil if !self.has_key?(url)
-      Gtk2AppLib.puts_bang!('store',url)
+      Gtk2AppLib.puts_bang!(url)
     end
   end
 
@@ -137,7 +137,7 @@ class Data < Hash
         store(url)
       end
     rescue Exception
-      Gtk2AppLib.puts_bang!('hit',url)
+      Gtk2AppLib.puts_bang!(url)
     end
   end
 
