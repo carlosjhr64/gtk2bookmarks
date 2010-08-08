@@ -13,9 +13,13 @@ program = Program.new( {
 	} )
 
 require 'gtk2bookmarks'
-data = Gtk2Bookmarks::Data.load(Configuration::DATA_DUMP_FILE,true)
-data.exclude_tags = Configuration::EXCLUDE_TAGS
-app = Gtk2Bookmarks::App.new(data,program.dock_menu)
+data			= Gtk2Bookmarks::Data.load(Configuration::DATA_DUMP_FILE,true)
+data.exclude_tags	= Configuration::EXCLUDE_TAGS
+data.timeout		= Configuration::HTTP_TIMEOUT
+data.max_list		= Configuration::MAX_LIST
+data.min_list		= Configuration::MIN_LIST
+data.attenuation	= Configuration::ATTENUATION
+app			= Gtk2Bookmarks::App.new(data,program.dock_menu)
 begin
   app.build_dock_menu
   about = {
@@ -23,7 +27,7 @@ begin
 	:website	=> 'http://ruby-gnome-apps.blogspot.com',
 	:website_label	=> 'Ruby-Gnome Apps',
 	:license	=> 'GPL',
-	:copyright	=> '2010-08-04 16:52:08',
+	:copyright	=> '2010-08-07 21:47:47',
 	}
   program.window(about){|window| app.build_window(window) }
 rescue Exception

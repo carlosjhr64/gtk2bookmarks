@@ -34,7 +34,7 @@ class App
 
   def overwrite_top_tags(match=nil)
     i = 0
-    @data.top_tags(match)[0..(Data::LIST_SIZE-1)].each{|tag|
+    @data.top_tags(match)[0..(TOP_TAGS-1)].each{|tag|
       top_tag = @top_tags[i]
       top_tag.label = tag
       top_tag.value = tag
@@ -49,6 +49,7 @@ class App
       @progress_label.text = 'Ready!'
       i = 0
       overwrite_top_tags
+      search
     end
   end
 
@@ -67,7 +68,7 @@ class App
     @thread = Thread.new {
       begin
         if url then
-          @data.store(url)
+          @data.hit(url)
           progressing
         end
         bookmarks
@@ -100,11 +101,11 @@ class App
           }
         }
         @dock_menu.show_all
-        done
       rescue Exception
         Gtk2AppLib.puts_bang!
       ensure
         @thread = nil
+        done
       end
     }
   end
@@ -115,7 +116,7 @@ class App
 
   def search
     i = 0
-    Configuration.hits_valuation(@data, @query.text, Data::LIST_SIZE).each{|url,title,_sort|
+    Configuration.hits_valuation(@data, @query.text, LIST_SIZE).each{|url,title,_sort|
       if title.strip.length < 1 then
         title = url
       end
@@ -144,7 +145,7 @@ class App
 
     top_tags = Gtk2AppLib::HBox.new(vbox)
     @top_tags = []
-    Data::LIST_SIZE.times do
+    TOP_TAGS.times do
       top_tag = Gtk2AppLib::Button.new('',top_tags){|tag|
         overwrite_top_tags(tag)
         @query.text += " "+tag
@@ -154,7 +155,7 @@ class App
       @top_tags.push(top_tag)
     end
 
-    Data::LIST_SIZE.times do |i|
+    LIST_SIZE.times do |i|
       results = Gtk2AppLib::HBox.new(vbox)
       label = nil
       link = Gtk2AppLib::Button.new(IMAGE[:go], results){|url|
@@ -162,7 +163,7 @@ class App
         build_dock_menu(url)
       }
       link.value = nil
-      label = Gtk2AppLib::Label.new("#{i}", results, {:label_width=>600})
+      label = Gtk2AppLib::Label.new('', results, {:label_width=>600})
       @results.push([label,link])
     end
 

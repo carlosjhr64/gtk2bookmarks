@@ -50,10 +50,8 @@ puts fn
   s.executables = executables
   s.default_executable = project
 
-  s.add_dependency('gtk2applib', '~> 5.0.0')
+  s.add_dependency('gtk2applib', '~> 7.1')
   s.requirements << 'gtk2'
-
-  s.require_path = '.'
 
   s.rubyforge_project = project
 end

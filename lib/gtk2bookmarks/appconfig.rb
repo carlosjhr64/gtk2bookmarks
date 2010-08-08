@@ -16,6 +16,14 @@ module Configuration
   firefox = `ls #{home}/.mozilla/firefox/*.default/bookmarks.html`.strip.split(/\s+/).shift	# firefox's
   BOOKMARKS_FILES.push(firefox) if firefox
 
+  # Gtk2Bookmarks will give the top tags, but
+  # one can override with one's own initial tags.
+  INITIAL_TAGS	= nil  # ['Weather','Email']
+
+  TOP_TAGS	= 8
+  MAX_LIST	= 13
+  MIN_LIST	= 3
+
   # Useless tags
   EXCLUDE_TAGS = [
 	"also", "amp", "and",
@@ -28,10 +36,8 @@ module Configuration
 	"you", "your",
 	]
 
-  # Gtk2Bookmarks will give the top tags, but
-  # one can override with one's own initial tags.
-  INITIAL_TAGS	= nil  # ['Weather','Email']
-  TAGS_EOI	= 9 # Number of tags - 1 (End Of Index)
+  # Time to wait for a get/head request
+  HTTP_TIMEOUT = 15	# seconds
 
   # These are the color codes for search results
   LOW_THRESH_HOLD		= 2.0
@@ -40,13 +46,7 @@ module Configuration
   HIGH_THRESH_HOLD_COLOR	= COLOR[:navy]
   DEFAULT_FG_COLOR		= COLOR[:black]
 
-  # Time to wait for a head request
-  HTTP_TIMEOUT = 15	# seconds
-  # Time to wait before rechecking the RDF bookmarks file
-  RDF_CHECK_TIME = 60	# seconds
-
-  ENTRY_OPTIONS = {:width=>500}.freeze
-
+  WIDGET_OPTIONS[:button_focus_on_click] = false
   HILDON = (Gtk2AppLib::WRAPPER.to_s =~ /Hildon/)
   if HILDON then
     # Maemo Tweeks
@@ -54,12 +54,12 @@ module Configuration
     WIDGET_OPTIONS[:label_font] = FONT[:large]
     WIDGET_OPTIONS[:padding] = 4
   end
-  WIDGET_OPTIONS[:button_focus_on_click] = false
 
   # Image for link button
   IMAGE[:go]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/go.png')
   IMAGE[:click]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/click.png')
-  # Close to icon
+
+  # Dock to icon, don't use close.
   MENU[:dock] = '_Dock'
 
   # When the hits data is saved, it's attenuated by this factor.

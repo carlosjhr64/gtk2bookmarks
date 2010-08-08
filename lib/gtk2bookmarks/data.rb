@@ -6,10 +6,7 @@ require 'timeout'
 
 module Gtk2Bookmarks
 class Data < Hash
-  attr_accessor :exclude_tags
-
-  LIST_SIZE = 13
-  MIN_LIST = 2
+  attr_accessor :exclude_tags, :timeout, :max_list, :attenuation
 
   SPLIT_BY = Regexp.new('[\W_]')
 
@@ -34,14 +31,44 @@ class Data < Hash
   end
 
   def initialize
-   super
-   @exclude_tags = []
+    super
+    @exclude_tags = []
+    @timeout = 15
+    @max_list = 13
+    @min_list = 3
+    @attenuation = 0.8
   end
 
   def dump(file)
     File.rename(file,file+'.bak')	if File.exist?(file)
-    self.each{|url,values| values[:hits] = Math.log(values[:hits]) + 1.0	if values }
+    self.each{|url,values|
+      if values then
+        values[:hits] *= @attenuation
+        values[:hits] = 1.0 if values[:hits] < 1.0
+      end
+    }
     File.open(file, 'w'){|fh| Marshal.dump(self, fh)}
+  end
+
+  def _http(url)
+    response = nil
+    uri = URI.parse(url)
+    Net::HTTP.start(uri.host,uri.port) do |http|
+      path = uri.path || '/'; path = '/' if path = ''
+      path_query = path + ((query = uri.query)? ('?'+query): '')
+      Timeout.timeout(@timeout){
+        response = yield(http,path_query)
+      }
+    end
+    return response
+  end
+
+  def http_get(url)
+    _http(url){|http,path| http.get(path)}
+  end
+
+  def http_head
+    _http(url){|http,path| http.head(path)}
   end
 
   def self.meta(doc,name)
@@ -60,43 +87,66 @@ class Data < Hash
     end
   end
 
-  def store(url,timeout=15)
+  def _store(url,body)
+    doc		= Hpricot(body)/'head'
+    title	= Data.title(doc)
+    description	= Data.meta(doc,'description')
+    keywords	= Data.meta(doc,'keywords')
+    tags	= Data.tags(url,title,description,keywords)
+    if values = self[url] then
+      values[:title]	= title
+      values[:tags]	= tags
+      values[:hits]	+= 1.0
+    else
+      self[url] = {:title=>title, :tags=>tags, :hits=>1.0}
+    end
+  end
+
+  def store(url)
     begin
-      uri = URI.parse(url)
-      Net::HTTP.start(uri.host,uri.port) do |http|
-        path = uri.path || '/'; path = '/' if path = ''
-        path_query = path + ((query = uri.query)? ('?'+query): '')
-        response = nil
-        Timeout.timeout(timeout){ response = http.get(path_query) }
-        if (response.code=~/^2/) && (response.content_type=='text/html') && (body = response.body) && (body.length > 0) then
-          doc		= Hpricot(body)/'head'
-          title		= Data.title(doc)
-          description	= Data.meta(doc,'description')
-          keywords	= Data.meta(doc,'keywords')
-          tags		= Data.tags(url,title,description,keywords)
-          if values = self[url] then
-            values[:title]	= title
-            values[:tags]	= tags
-            values[:hits]	+= 1.0
-          else
-            self[url] = {:title=>title, :tags=>tags, :hits=>1.0}
-          end
+      response = http_get(url)
+      if (response.code=~/^2/) && (response.content_type=='text/html') then
+        if (body = response.body) && (body.length > 0) then
+          # store new information
+          _store(url,body)
         else
-          self[url] = nil
+          # don't overwrite
+          self[url] = nil if !self.has_key?(url)
         end
-        if location = response.header['location'] then
-          location = 'http://' + uri.host + location if location=~/^\//
-          store(location)	if !self.has_key?(location)
-        end
+      else
+        # no longer a valid html url
+        self[url] = nil
       end
+      $stderr.puts "Store: #{url}\t=> #{self[url]}"	if $trace
+      _chase(response) # chasing moves...
     rescue Exception
+      # don't overwrite, probably some network error
       self[url] = nil if !self.has_key?(url)
-      Gtk2AppLib.puts_bang!(url)
+      Gtk2AppLib.puts_bang!('store',url)
+    end
+  end
+
+  def _chase(response)
+    if location = response.header['location'] then
+      location = 'http://' + uri.host + location if location=~/^\//
+      store(location)	if !self.has_key?(location)
     end
   end
 
   def hit(url)
-    self[url][:hits] += 1.0
+    begin
+      if self[url] then
+        response = http_head(url)
+        # increment hits unless no longer there
+        (response.code =~ /^2/)? (self[url][:hits] += 1.0): (self[url] = nil)
+        $stderr.puts "Hit: #{url}\t=> #{self[url]}"	if $trace
+        _chase(response) # chasing moves...
+      else
+        store(url)
+      end
+    rescue Exception
+      Gtk2AppLib.puts_bang!('hit',url)
+    end
   end
 
   def hits(url)
@@ -116,7 +166,7 @@ class Data < Hash
     top = top.sort{|a,b| b[1]<=>a[1]}
     max = top.first.last
     half = max/2
-    half = LIST_SIZE if half < LIST_SIZE
+    half = @max_list if half < @max_list
     i = top.find_index{|a| a.last < half}
     top = top[i..-1].map{|a| a.first}
     top.delete_if{|a| @exclude_tags.include?(a)}
@@ -131,11 +181,11 @@ class Data < Hash
       _tags = values[:tags]
       if _tags.include?(tag1) && _tags.include?(tag2) then
         count += 1
-        return nil if count > LIST_SIZE
+        return nil if count > @max_list
         urls.push([values[:title],url])
       end
     }
-    return nil if count < MIN_LIST
+    return nil if count < @min_list
     return urls
   end
 
@@ -151,11 +201,11 @@ class Data < Hash
         if links = path_links(tag1,tag2) then
           yield(tag1,tag2,links)
           count2 += 1
-          break if count2 >= LIST_SIZE
+          break if count2 >= @max_list
         end
       }
       count1 += 1
-      break if count1 >= LIST_SIZE
+      break if count1 >= @max_list
     }
   end
 end
