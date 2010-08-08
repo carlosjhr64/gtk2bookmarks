@@ -100,6 +100,11 @@ class App
               build_dock_menu(link)
             }
           }
+          submenu.append_menu_item('Run'){
+            @query.text = "#{tag1} #{tag2}"
+            search
+            @dock_menu.children[1].activate # <= should be Run's item
+          }
         }
         @dock_menu.show_all
       rescue Exception
