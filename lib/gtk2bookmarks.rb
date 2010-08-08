@@ -116,7 +116,7 @@ class App
 
   def search
     i = 0
-    Configuration.hits_valuation(@data, @query.text, LIST_SIZE).each{|url,title,_sort|
+    Configuration.hits_valuation(@data, @query.text, MAX_LIST).each{|url,title,_sort|
       if title.strip.length < 1 then
         title = url
       end
@@ -155,7 +155,7 @@ class App
       @top_tags.push(top_tag)
     end
 
-    LIST_SIZE.times do |i|
+    MAX_LIST.times do |i|
       results = Gtk2AppLib::HBox.new(vbox)
       label = nil
       link = Gtk2AppLib::Button.new(IMAGE[:go], results){|url|

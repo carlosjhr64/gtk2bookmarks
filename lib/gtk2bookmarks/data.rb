@@ -6,7 +6,7 @@ require 'timeout'
 
 module Gtk2Bookmarks
 class Data < Hash
-  attr_accessor :exclude_tags, :timeout, :max_list, :attenuation
+  attr_accessor :exclude_tags, :timeout, :max_list, :min_list, :attenuation
 
   SPLIT_BY = Regexp.new('[\W_]')
 
@@ -50,25 +50,20 @@ class Data < Hash
     File.open(file, 'w'){|fh| Marshal.dump(self, fh)}
   end
 
-  def _http(url)
+  def http_get(url,body=true)
     response = nil
     uri = URI.parse(url)
     Net::HTTP.start(uri.host,uri.port) do |http|
       path = uri.path || '/'; path = '/' if path = ''
       path_query = path + ((query = uri.query)? ('?'+query): '')
       Timeout.timeout(@timeout){
-        response = yield(http,path_query)
+        response = (body)? http.get(path_query): http.head(path_query)
       }
     end
+    if location = response.header['location'] then
+      response.header['location'] = (uri.host + location) if location=~/^\//
+    end
     return response
-  end
-
-  def http_get(url)
-    _http(url){|http,path| http.get(path)}
-  end
-
-  def http_head
-    _http(url){|http,path| http.head(path)}
   end
 
   def self.meta(doc,name)
@@ -118,7 +113,7 @@ class Data < Hash
         self[url] = nil
       end
       $stderr.puts "Store: #{url}\t=> #{self[url]}"	if $trace
-      _chase(response) # chasing moves...
+      _chase(response.header['location']) # chasing moves...
     rescue Exception
       # don't overwrite, probably some network error
       self[url] = nil if !self.has_key?(url)
@@ -126,21 +121,18 @@ class Data < Hash
     end
   end
 
-  def _chase(response)
-    if location = response.header['location'] then
-      location = 'http://' + uri.host + location if location=~/^\//
-      store(location)	if !self.has_key?(location)
-    end
+  def _chase(location)
+    store(location) if location && !self.has_key?(location)
   end
 
   def hit(url)
     begin
       if self[url] then
-        response = http_head(url)
+        response = http_get(url,false) # head only
         # increment hits unless no longer there
         (response.code =~ /^2/)? (self[url][:hits] += 1.0): (self[url] = nil)
         $stderr.puts "Hit: #{url}\t=> #{self[url]}"	if $trace
-        _chase(response) # chasing moves...
+        _chase(response.header['location']) # chasing moves...
       else
         store(url)
       end
