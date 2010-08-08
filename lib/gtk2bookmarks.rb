@@ -96,6 +96,7 @@ class App
             title = title[0..57]+'...' if title.length > 60
             submenu.append_menu_item(title){
               system( "#{APP[:browser]} '#{link}' > /dev/null 2>&1 &" )
+              @query.text = "#{tag1} #{tag2}"
               build_dock_menu(link)
             }
           }

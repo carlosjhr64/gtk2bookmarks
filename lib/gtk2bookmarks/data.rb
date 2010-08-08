@@ -118,6 +118,7 @@ class Data < Hash
       # don't overwrite, probably some network error
       self[url] = nil if !self.has_key?(url)
       Gtk2AppLib.puts_bang!(url)
+      sleep(1) if $trace
     end
   end
 
@@ -138,6 +139,7 @@ class Data < Hash
       end
     rescue Exception
       Gtk2AppLib.puts_bang!(url)
+      sleep(1) if $trace
     end
   end
 
