@@ -18,7 +18,7 @@ module Configuration
 
   # Gtk2Bookmarks will give the top tags, but
   # one can override with one's own initial tags.
-  INITIAL_TAGS	= nil  # ['Weather','Email']
+  INITIAL_TAGS	= [] # ['weather','email'] # must be all lowercase and alphanumeric
 
   TOP_TAGS	= 8
   MAX_LIST	= 13
@@ -31,7 +31,7 @@ module Configuration
 	"for", "from",
 	"more",
 	"org", "our",
-	"that","the",
+	"that","the", "tab",
 	"with", "www",
 	"you", "your",
 	]

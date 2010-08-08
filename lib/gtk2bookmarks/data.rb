@@ -6,7 +6,7 @@ require 'timeout'
 
 module Gtk2Bookmarks
 class Data < Hash
-  attr_accessor :exclude_tags, :timeout, :max_list, :min_list, :attenuation
+  attr_accessor :exclude_tags, :timeout, :max_list, :min_list, :attenuation, :initial_tags
 
   SPLIT_BY = Regexp.new('[\W_]')
 
@@ -37,6 +37,7 @@ class Data < Hash
     @max_list = 13
     @min_list = 3
     @attenuation = 0.8
+    @initial_tags = []
   end
 
   def dump(file)
@@ -165,7 +166,7 @@ class Data < Hash
     i = top.find_index{|a| a.last < half}
     top = top[i..-1].map{|a| a.first}
     top.delete_if{|a| @exclude_tags.include?(a)}
-    return top
+    return @initial_tags + top
   end
 
   def path_links(tag1,tag2)

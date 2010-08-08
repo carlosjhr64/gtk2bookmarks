@@ -19,6 +19,7 @@ data.timeout		= Configuration::HTTP_TIMEOUT
 data.max_list		= Configuration::MAX_LIST
 data.min_list		= Configuration::MIN_LIST
 data.attenuation	= Configuration::ATTENUATION
+data.initial_tags	= Configuration::INITIAL_TAGS
 app			= Gtk2Bookmarks::App.new(data,program.dock_menu)
 begin
   app.build_dock_menu
@@ -27,7 +28,7 @@ begin
 	:website	=> 'http://ruby-gnome-apps.blogspot.com',
 	:website_label	=> 'Ruby-Gnome Apps',
 	:license	=> 'GPL',
-	:copyright	=> '2010-08-08 11:34:59',
+	:copyright	=> '2010-08-08 12:39:16',
 	}
   program.window(about){|window| app.build_window(window) }
 rescue Exception

@@ -92,8 +92,7 @@ class App
           end
           submenu = item2[key2].submenu
           links.each{|title,link|
-            title = title.gsub(/\s+/,' ')
-            title = title[0..57]+'...' if title.length > 60
+            title = App.trunc(title,link,60)
             submenu.append_menu_item(title){
               system( "#{APP[:browser]} '#{link}' > /dev/null 2>&1 &" )
               @query.text = "#{tag1} #{tag2}"
@@ -116,6 +115,12 @@ class App
     }
   end
 
+  def self.trunc(title,url,n)
+    title = title.gsub(/\s+/,' ').gsub(/&\S+;/,'*')
+    title = url if title.length < 1
+    (title.length<n)? title: title[0..(n-4)] + '...'
+  end
+
   def self.fg_color(_sort)
     (_sort < LOW_THRESH_HOLD)?  LOW_THRESH_HOLD_COLOR: (_sort > HIGH_THRESH_HOLD)?  HIGH_THRESH_HOLD_COLOR: DEFAULT_FG_COLOR
   end
@@ -123,13 +128,10 @@ class App
   def search
     i = 0
     Configuration.hits_valuation(@data, @query.text, MAX_LIST).each{|url,title,_sort|
-      if title.length < 1 then
-        title = url
-      end
       result = @results[i]
       i+=1
       label = result[0]
-      label.text = title.gsub(/\s+/,' ')[0..80]
+      label.text = App.trunc(title,url,80)
       label.modify_fg(Gtk::STATE_NORMAL, App.fg_color(_sort))
       button = result[1]
       button.value = url
