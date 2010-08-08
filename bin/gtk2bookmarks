@@ -1,34 +1,39 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-gem 'gtk2applib', '~> 5.0.0'
-require 'gtk2applib/gtk2_app'
+gem 'gtk2applib', '~> 7.1'
+require 'gtk2applib'
 
-Gtk2App.init( {
+include Gtk2AppLib
+program = Program.new( {
         :name           => 'Ruby-Gnome Bookmarks',
         :tooltip        => 'Bookmarks',
-        :FILE           => __FILE__,
-        } )
+	:icon_name	=> 'Bookmarks',
+	:FILE		=> __FILE__,
+	:lock		=> "Proceed anyways?",
+	} )
 
-require 'gtk2bookmarks/bookmarks'
-Bookmarks.load_hits
-
-include Configuration
-bookmarks = Bookmarks.new(BOOKMARK_FILES)
-
-require 'gtk2bookmarks/gtk2bookmarksapp'
-Gtk2Bookmarks.dock_menu(bookmarks)
-Gtk2App.prep_icon_popup_menu = proc { Gtk2Bookmarks.conditional_reload(bookmarks) }
-
-about = {
+require 'gtk2bookmarks'
+data = Gtk2Bookmarks::Data.load(Configuration::DATA_DUMP_FILE,true)
+data.exclude_tags = Configuration::EXCLUDE_TAGS
+app = Gtk2Bookmarks::App.new(data,program.dock_menu)
+begin
+  app.build_dock_menu
+  about = {
 	:authors	=> ['carlosjhr64@gmail.com'],
-	:website	=> 'http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks',
-	:website_label	=> 'Ruby-Gnome Bookmarks Blog',
+	:website	=> 'http://ruby-gnome-apps.blogspot.com',
+	:website_label	=> 'Ruby-Gnome Apps',
 	:license	=> 'GPL',
-	:copyright	=> '2010-02-24 10:03:36',
+	:copyright	=> '2010-08-04 16:52:08',
 	}
-Gtk2App.main_window(about) do |window|
-  Gtk2Bookmarks::App.new(window,bookmarks)
+  program.window(about){|window| app.build_window(window) }
+rescue Exception
+  Gtk2AppLib.puts_bang!('Shutting down')
+ensure
+  begin
+    data.dump(Configuration::DATA_DUMP_FILE)
+    program.finalize
+    app.thread_kill
+  rescue Exception
+    Gtk2AppLib.puts_bang!
+  end
 end
-
-Bookmarks.dump_hits
-Gtk2App.finalize
