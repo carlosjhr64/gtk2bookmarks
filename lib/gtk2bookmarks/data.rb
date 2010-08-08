@@ -54,9 +54,10 @@ class Data < Hash
     response = nil
     uri = URI.parse(url)
     Net::HTTP.start(uri.host,uri.port) do |http|
-      path = uri.path || '/'; path = '/' if path = ''
+      path = uri.path || '/'; path = '/' if path == ''
       path_query = path + ((query = uri.query)? ('?'+query): '')
       Timeout.timeout(@timeout){
+        $stderr.puts path_query if $trace
         response = (body)? http.get(path_query): http.head(path_query)
       }
     end
@@ -68,7 +69,7 @@ class Data < Hash
 
   def self.meta(doc,name)
     begin
-      return CGI.unescapeHTML( doc.at("meta[@name='#{name}']")['content'].encode )
+      return CGI.unescapeHTML( doc.at("meta[@name='#{name}']")['content'].strip.encode )
     rescue Exception
       return  ''
     end
@@ -76,7 +77,7 @@ class Data < Hash
 
   def self.title(doc)
     begin
-      CGI.unescapeHTML( (doc/'title').inner_html.encode )
+      CGI.unescapeHTML( (doc/'title').inner_html.strip.encode )
     rescue Exception
       return ''
     end

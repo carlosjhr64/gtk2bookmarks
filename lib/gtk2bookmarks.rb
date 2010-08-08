@@ -123,7 +123,7 @@ class App
   def search
     i = 0
     Configuration.hits_valuation(@data, @query.text, MAX_LIST).each{|url,title,_sort|
-      if title.strip.length < 1 then
+      if title.length < 1 then
         title = url
       end
       result = @results[i]

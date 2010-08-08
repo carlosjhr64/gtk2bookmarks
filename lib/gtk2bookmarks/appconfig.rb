@@ -111,7 +111,8 @@ module Configuration
     rgxbs = (tokens)? query_split.map{|x| Regexp.new("\b#{x}\b",Regexp::IGNORECASE)} : nil
     bookmarks.each {|url,values|
       next if !values
-      result = [url,values[:title],rand]
+      title = values[:title]
+      result = [url,title,rand]
       # Initially seed with a random number 1>rand>0.
       # This will present the user with an initial random list
       # that may be appreciated by presenting links that might otherwise remain buried.
@@ -119,7 +120,6 @@ module Configuration
         # The variable bookmarks contains the page title, the link, and the tags.
         # Currently, tags are only available from epiphany, but
         # firefox's folders should become available as tags eventually.
-        title = values[:title]
         link = url
         tags = values[:tags].join(' ')
         # Note how these value tags hits the most,
