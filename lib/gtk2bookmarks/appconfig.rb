@@ -80,7 +80,7 @@ module Configuration
           # Just want the url's
           begin
             while md = line.match(url_match) do
-              url = md[0].encode
+              url = md[0]
               # note that it's up to the iterator to update seen
               yield(url,seen) if !seen.has_key?(url)
               line = md.post_match
@@ -88,6 +88,7 @@ module Configuration
           rescue Exception
             $stderr.puts line if $verbose
             Gtk2AppLib.puts_bang!(fn)
+            sleep(1) if $trace
           end
         }
       }

@@ -69,7 +69,7 @@ class Data < Hash
 
   def self.meta(doc,name)
     begin
-      return CGI.unescapeHTML( doc.at("meta[@name='#{name}']")['content'].strip.encode )
+      return CGI.unescapeHTML( doc.at("meta[@name='#{name}']")['content'].strip )
     rescue Exception
       return  ''
     end
@@ -77,7 +77,7 @@ class Data < Hash
 
   def self.title(doc)
     begin
-      CGI.unescapeHTML( (doc/'title').inner_html.strip.encode )
+      CGI.unescapeHTML( (doc/'title').inner_html.strip )
     rescue Exception
       return ''
     end
