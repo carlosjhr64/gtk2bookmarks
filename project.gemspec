@@ -51,6 +51,7 @@ puts fn
   s.default_executable = project
 
   s.add_dependency('gtk2applib', '~> 7.1')
+  s.add_dependency('hpricot', '~> 0')
   s.requirements << 'gtk2'
 
   s.rubyforge_project = project

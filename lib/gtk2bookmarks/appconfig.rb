@@ -26,15 +26,65 @@ module Configuration
 
   # Useless tags
   EXCLUDE_TAGS = [
-	"also", "amp", "and",
-	"com",
-	"for", "from",
-	"more",
-	"org", "our",
-	"that","the", "tab",
-	"with", "www",
-	"you", "your",
-	]
+	# Used in conjunctions
+	"after", "also", "although", "and", "as",
+	"because", "before", "both", "but", "by",
+	"case",
+	"either", "even",
+	"for", "if", "in",
+	"lest", "long",
+	"much",
+	"neither", "nor", "not",
+	"once", "only", "or", # "order",
+	"provided",
+	"since", "so", "soon",
+	"than", "that", "the", "though", "till", # "time",
+	"unless", "until",
+	"when", "whenever", "where", "wherever", "whether", "while",
+	"yet",
+
+	# possesives
+	"i", "mine", "my",
+	"you", "yours", "your",
+	"he", "his",
+	"she", "hers", "her",
+	"it", "its",
+	"we", "ours", "our",
+	"they", "theirs", "their",
+
+	# prepositions
+	"aboard", "about", "above", "across", "after", "against", "along", "amid", "among", "anti", "around", "as", "at",
+	"before", "behind", "below", "beneath", "beside", "besides", "between", "beyond", "but", "by",
+	"concerning", "considering",
+	"despite", "down", "during",
+	"except", "excepting", "excluding",
+	"following", "for", "from",
+	"in", "inside", "into",
+	"like",
+	"minus",
+	"near",
+	"of", "off", "on", "onto", "opposite", "outside", "over",
+	"past", "per", "plus",
+	"regarding", "round",
+	"save", "since",
+	"than", "through", "to", "toward", "towards",
+	"under", "underneath", "unlike", "until", "up", "upon",
+	"versus", "via",
+	"with", "within", "without",
+
+	# demonstratives
+	'this', 'that', 'these', 'those',
+
+	# url terms
+	'http','www', 'com', 'org', 'net', 'html', 'htm',
+
+	# just generally useless and common
+	'all', 'some', 'any', 'none',
+	'best', 'worst',
+	'less', 'least',
+	'more', 'most',
+	'many', 'much',
+	].uniq
 
   # Time to wait for a get/head request
   HTTP_TIMEOUT = 15	# seconds

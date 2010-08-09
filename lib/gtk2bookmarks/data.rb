@@ -150,9 +150,11 @@ class Data < Hash
   end
 
   def top_tags(match1=nil)
+    count = 0
     top = Hash.new(0)
     self.keys.each{|url|
       next if !(values = self[url])
+      count += values[:hits]
       _tags = values[:tags]
       if (!match1 || _tags.include?(match1)) then
         _tags.each{|tag| top[tag] += values[:hits] }
@@ -160,11 +162,11 @@ class Data < Hash
     }
     # return top sorted keys
     top = top.sort{|a,b| b[1]<=>a[1]}
-    max = top.first.last
-    half = max/2
-    half = @max_list if half < @max_list
-    i = top.find_index{|a| a.last < half}
-    top = top[i..-1].map{|a| a.first}
+    max = (2*count)/3
+    max = @max_list if max < @max_list
+    i = top.find_index{|a| a.last < max}
+    top = top[i..-1]
+    top = top.map{|a| a.first}
     top.delete_if{|a| @exclude_tags.include?(a)}
     return @initial_tags + top
   end
