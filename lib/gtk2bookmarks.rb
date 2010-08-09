@@ -53,7 +53,7 @@ class App
     end
   end
 
-  def bookmarks
+  def _store_new_bookmarks
     now = Time.now
     Configuration.bookmarks(@data,@mtime){|url,data|
       data.store(url)
@@ -62,17 +62,26 @@ class App
     @mtime = now
   end
 
-  def build_dock_menu(url=nil)
+  def delete_bookmarks_not_on_files
+    on_files = Configuration.bookmarks{|url,seen| seen[url] = true }
+    @data.delete_if{|url,values| (values.nil? || (values[:hits] < 0.0)) && !on_files[url]}
+  end
+
+  def _hit_urls(urls)
+    while url = urls.shift do
+      @data.hit(url)
+      progressing
+    end
+  end
+
+  def build_dock_menu(urls=nil)
     return if @thread
     progressing
     @thread = Thread.new {
       begin
-        if url then
-          @data.hit(url)
-          progressing
-        end
-        bookmarks
-        progressing
+        _hit_urls(urls) if urls
+        _store_new_bookmarks
+        delete_bookmarks_not_on_files
         s = '-'
         item1 = {}
         item2 = {}
@@ -96,7 +105,7 @@ class App
             submenu.append_menu_item(title){
               system( "#{APP[:browser]} '#{link}' > /dev/null 2>&1 &" )
               @query.text = "#{tag1} #{tag2}"
-              build_dock_menu(link)
+              build_dock_menu([link])
             }
           }
           submenu.append_menu_item('Run'){
@@ -202,6 +211,13 @@ class App
 
     progress = Gtk2AppLib::HBox.new(vbox)
     @progress_bar = Gtk2AppLib::ProgressBar.new(progress)
+    @reload_data = Gtk2AppLib::Button.new(IMAGE[:reload],progress){
+      if !@thread then
+        urls = []
+        @data.each{|url,values| urls.push(url) if !values}
+        build_dock_menu(urls)
+      end
+    }
     @progress_label = Gtk2AppLib::Label.new('0',progress)
     done if done?
   end

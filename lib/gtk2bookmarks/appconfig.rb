@@ -120,7 +120,9 @@ module Configuration
 
   # The application needs a list of bookmark urls.
   # Configuration.bookmarks yields each url.
-  # You can modify this list to exactly the bookmarks you want.
+  # You can modify this list to exactly the bookmarks you want, but
+  # must still do
+  # 	seen = Configuration.bookmarks(seen={},mtime=Time.at(0))
   def self.bookmarks(seen={},mtime=Time.at(0))
     # Bookmark files
     # pattern of directories for which we'll spider

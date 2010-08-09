@@ -131,13 +131,25 @@ class Data < Hash
 
   def hit(url)
     begin
-      if self[url] then
-        response = http_get(url,false) # head only
-        # increment hits unless no longer there
-        (response.code =~ /^2/)? (self[url][:hits] += 1.0): (self[url] = nil)
+      if self.has_key?(url) then
+        # have seen the url, just do a head check
+        response = http_get(url,false)
+        if response.code =~ /^2/ then
+          if self[url] then
+            # increment the hits
+            self[url][:hits] += 1.0
+          else
+            # url is back? get the data
+            store(url)
+          end
+        else
+          # url no longer there, nil it!
+          self[url] = nil
+        end
         $stderr.puts "Hit: #{url}\t=> #{self[url]}"	if $trace
         _chase(response.header['location']) # chasing moves...
       else
+        # have not seen this url, so get the full data
         store(url)
       end
     rescue Exception
