@@ -44,8 +44,8 @@ class Data < Hash
     File.rename(file,file+'.bak')	if File.exist?(file)
     self.each{|url,values|
       if values then
-        values[:hits] *= @attenuation
-        values[:hits] = 1.0 if values[:hits] < 1.0
+        hits = values[:hits]
+        values[:hits] = @attenuation*hits if hits > 0.0
       end
     }
     File.open(file, 'w'){|fh| Marshal.dump(self, fh)}

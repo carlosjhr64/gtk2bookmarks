@@ -110,12 +110,12 @@ module Configuration
   IMAGE[:go2]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/go2.png')
   IMAGE[:search]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/search.png')
   IMAGE[:clear]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/clear.png')
-  IMAGE[:delete]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/delete.png')
+  IMAGE[:down]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/down.png')
 
   # Dock to icon, don't use close.
   MENU[:dock] = '_Dock'
 
-  # When the hits data is saved, it's attenuated by this factor.
+  # When the hits data is saved, it's attenuated by this factor (0 < ATTENUATION < 1).
   ATTENUATION = 0.8
 
   # The application needs a list of bookmark urls.

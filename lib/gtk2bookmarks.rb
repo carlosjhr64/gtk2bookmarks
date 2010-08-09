@@ -193,9 +193,9 @@ class App
           end
         end
       }
-      Gtk2AppLib::Button.new(IMAGE[:delete], results){
-        label.text = '*'
-	@data[link.value] = nil
+      Gtk2AppLib::Button.new(IMAGE[:down], results){
+	@data[link.value][:hits] = -1.0 # this demotes the link
+        search
       }
       @results.push([label,link])
     end
