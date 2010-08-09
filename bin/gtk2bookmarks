@@ -28,9 +28,13 @@ begin
 	:website	=> 'http://ruby-gnome-apps.blogspot.com',
 	:website_label	=> 'Ruby-Gnome Apps',
 	:license	=> 'GPL',
-	:copyright	=> '2010-08-09 11:17:26',
+	:copyright	=> '2010-08-09 12:00:14',
 	}
-  program.window(about){|window| app.build_window(window) }
+  program.window(about){|window|
+    program.app.menu.append_menu_item('-')
+    program.app.menu.append_menu_item('_Full Reload'){ app.full_reload }
+    app.build_window(window)
+  }
 rescue Exception
   Gtk2AppLib.puts_bang!('Shutting down')
 ensure

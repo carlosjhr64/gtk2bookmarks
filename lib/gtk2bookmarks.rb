@@ -124,6 +124,14 @@ class App
     }
   end
 
+  def full_reload
+    if !@thread then
+      urls = []
+      @data.each{|url,values| urls.push(url) if !values}
+      build_dock_menu(urls)
+    end
+  end
+
   def self.trunc(title,n,url='')
     title = title.gsub(/\s+/,' ').gsub(/&\S+;/,'*')
     title = url if title.length < 1
@@ -212,13 +220,7 @@ class App
 
     progress = Gtk2AppLib::HBox.new(vbox)
     @progress_bar = Gtk2AppLib::ProgressBar.new(progress)
-    @reload_data = Gtk2AppLib::Button.new(IMAGE[:reload],progress){
-      if !@thread then
-        urls = []
-        @data.each{|url,values| urls.push(url) if !values}
-        build_dock_menu(urls)
-      end
-    }
+    Gtk2AppLib::Button.new(IMAGE[:reload],progress){ build_dock_menu }
     @progress_label = Gtk2AppLib::Label.new('0',progress)
     done if done?
   end
