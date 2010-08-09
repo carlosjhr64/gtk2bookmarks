@@ -182,8 +182,7 @@ class Data < Hash
 
     # Sort by top used tags and...
     top = top.sort{|a,b| b[1][0]<=>a[1][0]}
-    max = count/2 #+ @max_list
-    max = @max_list if max < @max_list
+    max = @max_list + (count/2)
     i = top.find_index{|a| a[1][0] < max}
     # ...chop off useless common ones
     top = top[i..-1]
@@ -221,7 +220,7 @@ class Data < Hash
       count2 = 0
       self.top_tags(tag1).each{|tag2|
         key = [tag1,tag2].sort.join('-')
-        next if seen[key]
+        next if seen[key] || (tag1 == tag2)
         seen[key] = true
         if links = path_links(tag1,tag2) then
           yield(tag1,tag2,links)

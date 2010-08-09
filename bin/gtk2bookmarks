@@ -25,10 +25,10 @@ begin
   app.build_dock_menu
   about = {
 	:authors	=> ['carlosjhr64@gmail.com'],
-	:website	=> 'http://ruby-gnome-apps.blogspot.com',
-	:website_label	=> 'Ruby-Gnome Apps',
+	:website	=> 'http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks',
+	:website_label	=> 'Ruby-Gnome Bookmarks',
 	:license	=> 'GPL',
-	:copyright	=> '2010-08-09 12:00:14',
+	:copyright	=> '2010-08-09 12:50:02',
 	}
   program.window(about){|window|
     program.app.menu.append_menu_item('-')

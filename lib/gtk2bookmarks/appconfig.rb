@@ -111,6 +111,7 @@ module Configuration
   IMAGE[:search]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/search.png')
   IMAGE[:clear]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/clear.png')
   IMAGE[:down]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/down.png')
+  IMAGE[:google]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/google.png')
 
   # Dock to icon, don't use close.
   MENU[:dock] = '_Dock'

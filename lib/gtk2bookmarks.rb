@@ -167,6 +167,11 @@ class App
       @query.text = ''
       @query.activate
     }
+    Gtk2AppLib::Button.new(IMAGE[:google],form){
+      if (query = @query.text.strip).length > 0 then
+        system( "#{APP[:browser]} 'http://www.google.com/search?q=#{CGI.escape(query)}' > /dev/null 2>&1 &" )
+      end
+    }
 
     top_tags = Gtk2AppLib::HBox.new(vbox)
     @top_tags = []
