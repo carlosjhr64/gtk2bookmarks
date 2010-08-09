@@ -178,9 +178,10 @@ class App
         system( "#{APP[:browser]} '#{url}' > /dev/null 2>&1 &" )
         @data.hit(url)
       }
+      link.value = nil
       label = nil
       event_box = Gtk2AppLib::EventBox.new(results){|e1,e2|
-        if e2.button == 1 then
+        if e2.button == 1 && link.value then
           if title = Gtk2AppLib::DIALOGS.entry('New title:') then
             @data[link.value][:title] = title
             label.text = App.trunc(title,80)
