@@ -92,7 +92,7 @@ class App
           end
           submenu = item2[key2].submenu
           links.each{|title,link|
-            title = App.trunc(title,link,60)
+            title = App.trunc(title,60,link)
             submenu.append_menu_item(title){
               system( "#{APP[:browser]} '#{link}' > /dev/null 2>&1 &" )
               @query.text = "#{tag1} #{tag2}"
@@ -115,7 +115,7 @@ class App
     }
   end
 
-  def self.trunc(title,url,n)
+  def self.trunc(title,n,url='')
     title = title.gsub(/\s+/,' ').gsub(/&\S+;/,'*')
     title = url if title.length < 1
     (title.length<n)? title: title[0..(n-4)] + '...'
@@ -131,7 +131,7 @@ class App
       result = @results[i]
       i+=1
       label = result[0]
-      label.text = App.trunc(title,url,80)
+      label.text = App.trunc(title,80,url)
       label.modify_fg(Gtk::STATE_NORMAL, App.fg_color(_sort))
       button = result[1]
       button.value = url
@@ -143,9 +143,9 @@ class App
 
     form = Gtk2AppLib::HBox.new(vbox)
     @results = []
-    Gtk2AppLib::Button.new(IMAGE[:click],form){ search }
+    Gtk2AppLib::Button.new(IMAGE[:search],form){ search }
     @query = Gtk2AppLib::Entry.new('',form,{:entry_width=>500}){ search }
-    Gtk2AppLib::Button.new('clear',form){
+    Gtk2AppLib::Button.new(IMAGE[:clear],form){
       overwrite_top_tags
       @query.text = ''
       @query.activate
@@ -165,13 +165,38 @@ class App
 
     MAX_LIST.times do |i|
       results = Gtk2AppLib::HBox.new(vbox)
-      label = nil
-      link = Gtk2AppLib::Button.new(IMAGE[:go], results){|url|
+      link = Gtk2AppLib::Button.new(IMAGE[:go2], results){|url|
         system( "#{APP[:browser]} '#{url}' > /dev/null 2>&1 &" )
-        build_dock_menu(url)
+        @data.hit(url)
       }
-      link.value = nil
-      label = Gtk2AppLib::Label.new('', results, {:label_width=>600})
+      label = nil
+      event_box = Gtk2AppLib::EventBox.new(results){|e1,e2|
+        if e2.button == 1 then
+          if title = Gtk2AppLib::DIALOGS.entry('New title:') then
+            @data[link.value][:title] = title
+            label.text = App.trunc(title,80)
+          end
+          true
+        else
+          false
+        end
+      }
+      label = Gtk2AppLib::Label.new('', event_box, {:label_width=>500})
+      Gtk2AppLib::Button.new(IMAGE[:reload], results){
+        if url = link.value then
+          values = @data.store(url)
+          if values then
+            label.text = App.trunc(values[:title],80,url)
+          else
+            link.value = nil
+            label.text = '*'
+          end
+        end
+      }
+      Gtk2AppLib::Button.new(IMAGE[:delete], results){
+        label.text = '*'
+	@data[link.value] = nil
+      }
       @results.push([label,link])
     end
 

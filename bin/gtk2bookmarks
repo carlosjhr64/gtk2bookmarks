@@ -28,7 +28,7 @@ begin
 	:website	=> 'http://ruby-gnome-apps.blogspot.com',
 	:website_label	=> 'Ruby-Gnome Apps',
 	:license	=> 'GPL',
-	:copyright	=> '2010-08-08 21:14:23',
+	:copyright	=> '2010-08-09 08:23:02',
 	}
   program.window(about){|window| app.build_window(window) }
 rescue Exception

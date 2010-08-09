@@ -93,7 +93,7 @@ class Data < Hash
     if values = self[url] then
       values[:title]	= title
       values[:tags]	= tags
-      values[:hits]	+= 1.0
+      # values[:hits]	+= 1.0 # it's just a reload... don't hit it
     else
       self[url] = {:title=>title, :tags=>tags, :hits=>1.0}
     end
@@ -122,6 +122,7 @@ class Data < Hash
       Gtk2AppLib.puts_bang!(url)
       sleep(1) if $trace
     end
+    self[url]
   end
 
   def _chase(location)

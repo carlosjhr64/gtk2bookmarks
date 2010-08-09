@@ -106,8 +106,11 @@ module Configuration
   end
 
   # Image for link button
-  IMAGE[:go]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/go.png')
-  IMAGE[:click]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/click.png')
+  IMAGE[:reload]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/reload.png')
+  IMAGE[:go2]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/go2.png')
+  IMAGE[:search]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/search.png')
+  IMAGE[:clear]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/clear.png')
+  IMAGE[:delete]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/delete.png')
 
   # Dock to icon, don't use close.
   MENU[:dock] = '_Dock'
