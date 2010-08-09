@@ -150,24 +150,38 @@ class Data < Hash
   end
 
   def top_tags(match1=nil)
+    top = Hash.new
+
     count = 0
-    top = Hash.new(0)
     self.keys.each{|url|
       next if !(values = self[url])
-      count += values[:hits]
+      count += 1
       _tags = values[:tags]
       if (!match1 || _tags.include?(match1)) then
-        _tags.each{|tag| top[tag] += values[:hits] }
+        _tags.each{|tag|
+          top[tag] = [0,0] if !top[tag]
+          top[tag][0] += 1
+          top[tag][1] += values[:hits]
+        }
       end
+
     }
-    # return top sorted keys
-    top = top.sort{|a,b| b[1]<=>a[1]}
-    max = (2*count)/3
+
+    # Sort by top used tags and...
+    top = top.sort{|a,b| b[1][0]<=>a[1][0]}
+    max = count/2 #+ @max_list
     max = @max_list if max < @max_list
-    i = top.find_index{|a| a.last < max}
+    i = top.find_index{|a| a[1][0] < max}
+    # ...chop off useless common ones
     top = top[i..-1]
+
+    # Sort by top hits tags and...
+    top = top.sort{|a,b| b[1][1]<=>a[1][1]}
     top = top.map{|a| a.first}
+    # ...delete tags we don't want as per configuration.
     top.delete_if{|a| @exclude_tags.include?(a)}
+
+    # Return top tag prepended with configuration choices.
     return @initial_tags + top
   end
 
