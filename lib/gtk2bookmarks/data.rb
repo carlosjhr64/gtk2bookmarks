@@ -8,7 +8,7 @@ module Gtk2Bookmarks
 class Data < Hash
   attr_accessor :exclude_tags, :timeout, :max_list, :min_list, :attenuation, :initial_tags
 
-  SPLIT_BY = Regexp.new('[\W_]')
+  SPLIT_BY = Regexp.new('[\W_]+')
 
   def self.load(file,create=false)
     if File.exist?(file) then
@@ -24,7 +24,7 @@ class Data < Hash
   def self.tags(url,title,description,keywords)
     _tags = keywords.downcase.split(SPLIT_BY).uniq
     _tags += title.downcase.split(SPLIT_BY).uniq
-    _tags += description.downcase.split(SPLIT_BY).uniq
+    _tags += description.downcase.split(SPLIT_BY).uniq.delete_if{|w| @exclude_tags.include?(w)}
     _tags += url.downcase.split(SPLIT_BY).uniq
     _tags = _tags.uniq.delete_if{|a| a.length < 3}
     return _tags

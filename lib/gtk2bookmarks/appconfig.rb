@@ -75,6 +75,14 @@ module Configuration
 	# demonstratives
 	'this', 'that', 'these', 'those',
 
+	# aux. verbs
+	'ain', 'are', 'aren', 'been', 'can', 'could', 'couldn', 'did', 'didn', 'does', 'doesn', 'don', 'had', 'hadn', 'has', 'hasn', 'have', 'haven',
+	'isn', 'may', 'mayn', 'might', 'mightn', 'must', 'mustn',
+	'ought', 'oughtn',
+	'shall', 'shan',
+	'should', 'shouldn',
+	'was', 'wasn', 'were', 'weren', 'will', 'won', 'would', 'wouldn',
+
 	# url terms
 	'http','www', 'com', 'org', 'net', 'html', 'htm',
 
