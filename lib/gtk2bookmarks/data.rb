@@ -21,7 +21,7 @@ class Data < Hash
     raise "#{file} does not exist."
   end
 
-  def self.tags(url,title,description,keywords)
+  def get_tags(url,title,description,keywords)
     _tags = keywords.downcase.split(SPLIT_BY).uniq
     _tags += title.downcase.split(SPLIT_BY).uniq
     _tags += description.downcase.split(SPLIT_BY).uniq.delete_if{|w| @exclude_tags.include?(w)}
@@ -89,7 +89,7 @@ class Data < Hash
     title	= Data.title(doc)
     description	= Data.meta(doc,'description')
     keywords	= Data.meta(doc,'keywords')
-    tags	= Data.tags(url,title,description,keywords)
+    tags	= get_tags(url,title,description,keywords)
     if values = self[url] then
       values[:title]	= title
       values[:tags]	= tags
