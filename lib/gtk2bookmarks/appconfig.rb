@@ -125,7 +125,19 @@ module Configuration
   MENU[:dock] = '_Dock'
 
   # When the hits data is saved, it's attenuated by this factor (0 < ATTENUATION < 1).
-  ATTENUATION = 0.8
+  ATTENUATION = 0.9 # 0 < ATTENUATION < 1
+  # Do not attenuate below this amount
+  SMALL = 0.5 # 0 < SMALL < 1
+
+  DATA_OPTIONS	= {
+	:exclude_tags	=> EXCLUDE_TAGS,
+	:timeout	=> HTTP_TIMEOUT,
+	:max_list	=> MAX_LIST,
+	:min_list	=> MIN_LIST,
+	:attenuation	=> ATTENUATION,
+	:small		=> SMALL,
+	:initial_tags	=> INITIAL_TAGS,
+	}
 
   # The application needs a list of bookmark urls.
   # Configuration.bookmarks yields each url.

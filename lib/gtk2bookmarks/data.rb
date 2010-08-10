@@ -6,10 +6,9 @@ require 'timeout'
 
 module Gtk2Bookmarks
 class Data < Hash
-  attr_accessor :exclude_tags, :timeout, :max_list, :min_list, :attenuation, :initial_tags
+  attr_accessor :exclude_tags, :timeout, :max_list, :min_list, :attenuation, :initial_tags, :small
 
   SPLIT_BY = Regexp.new('[\W_]+')
-  SMALL = 0.01
 
   def self.load(file,create=false)
     if File.exist?(file) then
@@ -31,14 +30,19 @@ class Data < Hash
     return _tags
   end
 
-  def initialize
-    super
-    @exclude_tags = []
-    @timeout = 15
-    @max_list = 13
-    @min_list = 3
-    @attenuation = 0.8
-    @initial_tags = []
+  def options(hash)
+    @exclude_tags	= hash[:exclude_tags]	|| []
+    @timeout		= hash[:timeout]	|| 15
+    @max_list		= hash[:max_list]	|| 13
+    @min_list		= hash[:min_list]	|| 3
+    @attenuation	= hash[:attenuation]	|| 0.9
+    @initial_tags	= hash[:initial_tags]	|| []
+    @small		= hash[:small]		|| 0.5
+  end
+
+  def initialize(hash={})
+    super()
+    self.options(hash)
   end
 
   def dump(file)
@@ -46,7 +50,7 @@ class Data < Hash
     self.each{|url,values|
       if values then
         hits = values[:hits]
-        values[:hits] = @attenuation*hits if hits > SMALL # don't attenuate to zero
+        values[:hits] = @attenuation*hits if hits > @small # don't attenuate to zero
       end
     }
     File.open(file, 'w'){|fh| Marshal.dump(self, fh)}
