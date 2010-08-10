@@ -86,7 +86,7 @@ class App
         item1 = {}
         item2 = {}
         @dock_menu.clear
-        @data.top_paths{|tag1,tag2,links|
+        @data.top_paths(TOP_TAGS){|tag1,tag2,links|
           progressing
           key1 =  tag1
           if !item1[key1] then
