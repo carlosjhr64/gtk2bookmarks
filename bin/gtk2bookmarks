@@ -23,7 +23,7 @@ begin
 	:website	=> 'http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks',
 	:website_label	=> 'Ruby-Gnome Bookmarks',
 	:license	=> 'GPL',
-	:copyright	=> '2010-08-10 08:58:41',
+	:copyright	=> '2010-08-10 09:31:17',
 	}
   program.window(about){|window|
     program.app.menu.append_menu_item('-')
