@@ -198,15 +198,15 @@ class Data < Hash
     return @initial_tags + top
   end
 
-  def path_links(tag1,tag2)
+  def path_links(tag1,tag2,maxout=@max_list)
     count = 0
     urls = []
     self.each{|url,values|
-      next if !values
+      next if !values || (values[:hits] <= 0.0)
       _tags = values[:tags]
       if _tags.include?(tag1) && _tags.include?(tag2) then
-        count += 1
-        return nil if count > @max_list
+        count += 1 
+        return nil if count > maxout
         urls.push([values[:title],url])
       end
     }
@@ -215,14 +215,14 @@ class Data < Hash
   end
 
   def top_paths(maxout=@max_list)
-    seen = {}
+    seen_path = {}
     count1 = 0
     self.top_tags.each{|tag1|
       count2 = 0
       self.top_tags(tag1).each{|tag2|
         key = [tag1,tag2].sort.join('-')
-        next if seen[key] || (tag1 == tag2)
-        seen[key] = true
+        next if seen_path[key] || (tag1 == tag2)
+        seen_path[key] = true
         if links = path_links(tag1,tag2) then
           yield(tag1,tag2,links)
           count2 += 1

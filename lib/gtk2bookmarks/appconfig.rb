@@ -84,7 +84,7 @@ module Configuration
 	'was', 'wasn', 'were', 'weren', 'will', 'won', 'would', 'wouldn',
 
 	# url terms
-	'http','www', 'com', 'org', 'net', 'html', 'htm',
+	'http','www', 'com', 'org', 'net', 'html', 'htm', 'amp', 'tab',
 
 	# just generally useless and common
 	'all', 'some', 'any', 'none',
