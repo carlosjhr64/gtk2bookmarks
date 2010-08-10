@@ -210,7 +210,8 @@ module Configuration
           result[2] += 2.0 if link=~rgxb
         }
       end
-      result[2] *= 2.0 / (1.0 + Math.exp(-values[:hits]))
+      hits = values[:hits]
+      result[2] *= (hits > 0.0)? (2.0 / (1.0 + Math.exp(-hits))): 0.25
       results.push(result)
     }
     # Now results can be sorted by its :sort value...

@@ -64,7 +64,7 @@ class App
 
   def delete_bookmarks_not_on_files
     on_files = Configuration.bookmarks{|url,seen| seen[url] = true }
-    @data.delete_if{|url,values| (values.nil? || (values[:hits] < 0.0)) && !on_files[url]}
+    @data.delete_if{|url,values| (values.nil? || (values[:hits] <= 0.0)) && !on_files[url]}
   end
 
   def _hit_urls(urls)
@@ -217,7 +217,7 @@ class App
         end
       }
       Gtk2AppLib::Button.new(IMAGE[:down], results){
-	@data[link.value][:hits] = -1.0 # this demotes the link
+	@data[link.value][:hits] = 0.0 # this demotes the link
         search
       }
       @results.push([label,link])

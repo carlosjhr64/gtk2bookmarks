@@ -9,6 +9,7 @@ class Data < Hash
   attr_accessor :exclude_tags, :timeout, :max_list, :min_list, :attenuation, :initial_tags
 
   SPLIT_BY = Regexp.new('[\W_]+')
+  SMALL = 0.01
 
   def self.load(file,create=false)
     if File.exist?(file) then
@@ -45,7 +46,7 @@ class Data < Hash
     self.each{|url,values|
       if values then
         hits = values[:hits]
-        values[:hits] = @attenuation*hits if hits > 0.0
+        values[:hits] = @attenuation*hits if hits > SMALL # don't attenuate to zero
       end
     }
     File.open(file, 'w'){|fh| Marshal.dump(self, fh)}
@@ -213,7 +214,7 @@ class Data < Hash
     return urls
   end
 
-  def top_paths
+  def top_paths(maxout=@max_list)
     seen = {}
     count1 = 0
     self.top_tags.each{|tag1|
@@ -225,11 +226,11 @@ class Data < Hash
         if links = path_links(tag1,tag2) then
           yield(tag1,tag2,links)
           count2 += 1
-          break if count2 >= @max_list
+          break if count2 >= maxout
         end
       }
       count1 += 1
-      break if count1 >= @max_list
+      break if count1 >= maxout
     }
   end
 end
