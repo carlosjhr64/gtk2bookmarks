@@ -13,8 +13,13 @@ module Configuration
  	home+'/.opera/bookmarks.adr',					# opera's
  	home+'/.config/google-chrome/Default/Bookmarks',		# google-chrome's
 	]
-  firefox = `ls #{home}/.mozilla/firefox/*.default/bookmarks.html`.strip.split(/\s+/).shift	# firefox's
-  BOOKMARKS_FILES.push(firefox) if firefox
+  mozilla = "#{home}/.mozilla"
+  if File.exist?(mozilla) && File.directory?(mozilla) then
+    require 'find'
+    Find.find(mozilla) do |filename|
+      BOOKMARKS_FILES.push(filename) if filename =~ /bookmarks/i && File.file?(filename)
+    end
+  end
 
   # Gtk2Bookmarks will give the top tags, but
   # one can override with one's own initial tags.
@@ -84,7 +89,7 @@ module Configuration
 	'was', 'wasn', 'were', 'weren', 'will', 'won', 'would', 'wouldn',
 
 	# url terms
-	'http','www', 'com', 'org', 'net', 'html', 'htm', 'amp', 'tab',
+	'http','https','www', 'com', 'org', 'net', 'html', 'htm', 'amp', 'tab',
 
 	# just generally useless and common
 	'all', 'some', 'any', 'none',
@@ -150,6 +155,7 @@ module Configuration
     url_match = Regexp.new('http://[^"<>\s\']+')
     BOOKMARKS_FILES.each{|fn|
       next if !File.exist?(fn) || !File.file?(fn) || (File.mtime(fn)<mtime)
+      $stderr.puts fn if $trace
       File.open(fn,'r'){|fh|
         fh.each{|line|
           # Giving up on parsing all these types of files...
