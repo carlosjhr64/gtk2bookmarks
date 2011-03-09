@@ -1,14 +1,35 @@
 module Gtk2AppLib
+module Widgets
+  WIDGET[:Button][:focus_on_click=] = false
+  if Gtk2AppLib::HILDON then # Maemo Tweeks
+    WIDGET[:Entry][:modify_font] = WIDGET[:Label][:modify_font] = Configuration::FONT[:Large]
+    WIDGET[:Widgets][:pack_start][2] = 4
+  end
+end
 module Configuration
+  WINDOW_DEFAULT_SIZE[0],WINDOW_DEFAULT_SIZE[1] = 100,100
+end
+end
+
+module Gtk2Bookmarks
+module Configuration
+  require 'net/http'
+  begin
+    require 'net/https'
+    SSL = true
+  rescue Exception
+    SSL = false
+  end
+
   # where your bookmarks data will be saved
-  DATA_DUMP_FILE = UserSpace::DIRECTORY+'/gtk2bookmarks.dat'
+  DATA_DUMP_FILE = Gtk2AppLib::USERDIR+'/gtk2bookmarks.dat'
 
   # your imported bookmarks
   home = ENV['HOME'] 
   BOOKMARKS_FILES = [
 	home+'/.gnome2/epiphany/bookmarks.rdf',				# Epiphany's bookmarks RDF file
  	home+'/Desktop/bookmarks.html',					# Maybe you have a few here
- 	UserSpace::DIRECTORY+'/bookmarks.html',				# Maybe you copy your favorite bookmarks here
+	Gtk2AppLib::USERDIR+'/bookmarks.html',				# Maybe you copy your favorite bookmarks here
  	home+'/.bookmarks/MyBookmarks.xml',				# maemo has bookmarks here
  	home+'/.opera/bookmarks.adr',					# opera's
  	home+'/.config/google-chrome/Default/Bookmarks',		# google-chrome's
@@ -21,9 +42,6 @@ module Configuration
     end
   end
 
-  # Gtk2Bookmarks will give the top tags, but
-  # one can override with one's own initial tags.
-  INITIAL_TAGS	= [] # ['weather','email'] # must be all lowercase and alphanumeric
 
   TOP_TAGS	= 8
   MAX_LIST	= 13
@@ -99,50 +117,45 @@ module Configuration
 	'many', 'much',
 	].uniq
 
-  # Time to wait for a get/head request
-  HTTP_TIMEOUT = 15	# seconds
-
   # These are the color codes for search results
   LOW_THRESH_HOLD		= 2.0
-  LOW_THRESH_HOLD_COLOR		= COLOR[:gray]
+  LOW_THRESH_HOLD_COLOR		= Gtk2AppLib::Color[:Gray]
   HIGH_THRESH_HOLD		= 45.0
-  HIGH_THRESH_HOLD_COLOR	= COLOR[:navy]
-  DEFAULT_FG_COLOR		= COLOR[:black]
-
-  WIDGET_OPTIONS[:button_focus_on_click] = false
-  HILDON = (Gtk2AppLib::WRAPPER.to_s =~ /Hildon/)
-  if HILDON then
-    # Maemo Tweeks
-    WIDGET_OPTIONS[:entry_font] = FONT[:large]
-    WIDGET_OPTIONS[:label_font] = FONT[:large]
-    WIDGET_OPTIONS[:padding] = 4
-  end
+  HIGH_THRESH_HOLD_COLOR	= Gtk2AppLib::Color[/Navy/]
+  DEFAULT_FG_COLOR		= Gtk2AppLib::Color[:Black]
 
   # Image for link button
-  IMAGE[:reload]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/reload.png')
-  IMAGE[:go2]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/go2.png')
-  IMAGE[:search]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/search.png')
-  IMAGE[:clear]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/clear.png')
-  IMAGE[:down]		= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/down.png')
-  IMAGE[:google]	= Gdk::Pixbuf.new(UserSpace::DIRECTORY+'/pngs/google.png')
+  Gtk2AppLib.image([:Reload,:Go2,:Search,:Clear,:Down,:Google])
 
   # Dock to icon, don't use close.
-  MENU[:dock] = '_Dock'
-
-  # When the hits data is saved, it's attenuated by this factor (0 < ATTENUATION < 1).
-  ATTENUATION = 0.9 # 0 < ATTENUATION < 1
-  # Do not attenuate below this amount
-  SMALL = 0.5 # 0 < SMALL < 1
+  Gtk2AppLib::Configuration::MENU[:dock] = '_Dock'
 
   DATA_OPTIONS	= {
 	:exclude_tags	=> EXCLUDE_TAGS,
-	:timeout	=> HTTP_TIMEOUT,
+	# Time to wait for a get/head request
+	:timeout	=> 15,
 	:max_list	=> MAX_LIST,
 	:min_list	=> MIN_LIST,
-	:attenuation	=> ATTENUATION,
-	:small		=> SMALL,
-	:initial_tags	=> INITIAL_TAGS,
+	# When the hits data is saved, it's attenuated by this factor (0 < attenuation < 1).
+	:attenuation	=> 0.9,
+	# Do not attenuate below this amount
+	:small		=> 0.5,
+	# Gtk2Bookmarks will give the top tags, but
+	# one can override with one's own initial tags.
+	:initial_tags	=> [] # ie. ['weather','email'] must be all lowercase and alphanumeric
 	}
+
+  clicked = 'clicked'
+  SEARCH_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Search],clicked]
+  SEARCH_ENTRY = ['',{:width_request= => 500},'activate']
+  CLEAR_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Clear],clicked]
+  GOOGLE_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Google],clicked]
+  TOP_TAG_BUTTON = ['',clicked]
+  GO2_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Go2],clicked]
+  NEW_TITLE_DIALOG = ['New title:']
+  BOOKMARK_LABEL = ['',{:width_request= => 500, :wrap= => true}]
+  RELOAD_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Reload],clicked]
+  DOWN_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Down],clicked]
 
   # The application needs a list of bookmark urls.
   # Configuration.bookmarks yields each url.
@@ -152,7 +165,7 @@ module Configuration
   def self.bookmarks(seen={},mtime=Time.at(0))
     # Bookmark files
     # pattern of directories for which we'll spider
-    url_match = Regexp.new('http://[^"<>\s\']+')
+    url_match = (SSL)? Regexp.new('https?://[^"<>\s\']+') : Regexp.new('http://[^"<>\s\']+')
     BOOKMARKS_FILES.each{|fn|
       next if !File.exist?(fn) || !File.file?(fn) || (File.mtime(fn)<mtime)
       $stderr.puts fn if $trace

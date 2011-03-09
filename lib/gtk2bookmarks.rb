@@ -1,11 +1,11 @@
 require 'gtk2bookmarks/data'
 module Gtk2Bookmarks
 class App
-  include Configuration
 
-  def initialize(data,dock_menu)
+  #def initialize(data,dock_menu)
+  def initialize(program,data)
     @data = data
-    @dock_menu = dock_menu
+    @program = program
     @mtime = Time.at(0)
 
     @progress_bar = nil
@@ -34,10 +34,10 @@ class App
 
   def overwrite_top_tags(match=nil)
     i = 0
-    @data.top_tags(match)[0..(TOP_TAGS-1)].each{|tag|
+    @data.top_tags(match)[0..(Configuration::TOP_TAGS-1)].each{|tag|
       top_tag = @top_tags[i]
       top_tag.label = tag
-      top_tag.value = tag
+      top_tag.is = tag
       i+=1
     }
   end
@@ -77,7 +77,7 @@ class App
   def build_dock_menu(urls=nil)
     return if @thread
     progressing
-    @thread = Thread.new {
+    @thread = Thread.new do
       begin
         _hit_urls(urls) if urls
         _store_new_bookmarks
@@ -85,43 +85,42 @@ class App
         s = '-'
         item1 = {}
         item2 = {}
-        @dock_menu.clear
-        @data.top_paths(TOP_TAGS){|tag1,tag2,links|
+        @program.clear_dock_menu
+        @data.top_paths(Configuration::TOP_TAGS) do |tag1,tag2,links|
           progressing
           key1 =  tag1
           if !item1[key1] then
-	      item1[key1] = @dock_menu.append_menu_item(tag1)
-	      item1[key1].set_submenu(Gtk2AppLib::Menu.new)
+	      item1[key1] = @program.append_dock_menu(tag1)
+	      item1[key1].set_submenu(Gtk2AppLib::Widgets::Menu.new)
           end
           submenu = item1[key1].submenu
           key2 =  tag1+s+tag2
           if !item2[key2] then
               item2[key2] = submenu.append_menu_item(tag2)
-              item2[key2].set_submenu(Gtk2AppLib::Menu.new)
+              item2[key2].set_submenu(Gtk2AppLib::Widgets::Menu.new)
           end
           submenu = item2[key2].submenu
-          links.each{|title,link|
+          links.each do |title,link|
             title = App.trunc(title,60,link)
-            submenu.append_menu_item(title){
-              system( "#{APP[:browser]} '#{link}' > /dev/null 2>&1 &" )
+            submenu.append_menu_item(title) do
+              Gtk2AppLib.run(link)
               @query.text = "#{tag1} #{tag2}"
               build_dock_menu([link])
-            }
-          }
+            end
+          end
           submenu.append_menu_item('Run'){
             @query.text = "#{tag1} #{tag2}"
             search
-            @dock_menu.children[1].activate # <= should be Run's item
+            @program.activate
           }
-        }
-        @dock_menu.show_all
+        end 
       rescue Exception
-        Gtk2AppLib.puts_bang!
+        $!.puts_bang!
       ensure
         @thread = nil
         done
       end
-    }
+    end
   end
 
   def full_reload
@@ -139,64 +138,66 @@ class App
   end
 
   def self.fg_color(_sort)
-    (_sort < LOW_THRESH_HOLD)?  LOW_THRESH_HOLD_COLOR: (_sort > HIGH_THRESH_HOLD)?  HIGH_THRESH_HOLD_COLOR: DEFAULT_FG_COLOR
+    (_sort < Configuration::LOW_THRESH_HOLD)?
+	Configuration::LOW_THRESH_HOLD_COLOR :
+	((_sort > Configuration::HIGH_THRESH_HOLD)?  Configuration::HIGH_THRESH_HOLD_COLOR: Configuration::DEFAULT_FG_COLOR)
   end
 
   def search
     i = 0
-    Configuration.hits_valuation(@data, @query.text, MAX_LIST).each{|url,title,_sort|
+    Configuration.hits_valuation(@data, @query.text, Configuration::MAX_LIST).each{|url,title,_sort|
       result = @results[i]
       i+=1
       label = result[0]
       label.text = App.trunc(title,80,url)
       label.modify_fg(Gtk::STATE_NORMAL, App.fg_color(_sort))
       button = result[1]
-      button.value = url
+      button.is = url
     }
   end
 
   def build_window(window)
-    vbox = Gtk2AppLib::VBox.new(window)
+    vbox = Gtk2AppLib::Widgets::VBox.new(window)
 
-    form = Gtk2AppLib::HBox.new(vbox)
+    form = Gtk2AppLib::Widgets::HBox.new(vbox)
     @results = []
-    Gtk2AppLib::Button.new(IMAGE[:search],form){ search }
-    @query = Gtk2AppLib::Entry.new('',form,{:entry_width=>500}){ search }
-    Gtk2AppLib::Button.new(IMAGE[:clear],form){
+    Gtk2AppLib::Widgets::Button.new(*Configuration::SEARCH_BUTTON+[form]){ search }
+    @query = Gtk2AppLib::Widgets::Entry.new(*Configuration::SEARCH_ENTRY+[form]){ search }
+    Gtk2AppLib::Widgets::Button.new(*Configuration::CLEAR_BUTTON+[form]){
       overwrite_top_tags
       @query.text = ''
       @query.activate
     }
-    Gtk2AppLib::Button.new(IMAGE[:google],form){
+    Gtk2AppLib::Widgets::Button.new(*Configuration::GOOGLE_BUTTON+[form]){
       if (query = @query.text.strip).length > 0 then
-        system( "#{APP[:browser]} 'http://www.google.com/search?q=#{CGI.escape(query)}' > /dev/null 2>&1 &" )
+        Gtk2AppLib.run("https://www.google.com/search?q=#{CGI.escape(query)}")
       end
     }
 
-    top_tags = Gtk2AppLib::HBox.new(vbox)
+    top_tags = Gtk2AppLib::Widgets::HBox.new(vbox)
     @top_tags = []
-    TOP_TAGS.times do
-      top_tag = Gtk2AppLib::Button.new('',top_tags){|tag|
+    Configuration::TOP_TAGS.times do
+      top_tag = Gtk2AppLib::Widgets::Button.new(*Configuration::TOP_TAG_BUTTON+[top_tags]){|tag,*emits|
         overwrite_top_tags(tag)
         @query.text += " "+tag
         @query.activate
       }
-      top_tag.value = nil
+      top_tag.is = nil
       @top_tags.push(top_tag)
     end
 
-    MAX_LIST.times do |i|
-      results = Gtk2AppLib::HBox.new(vbox)
-      link = Gtk2AppLib::Button.new(IMAGE[:go2], results){|url|
-        system( "#{APP[:browser]} '#{url}' > /dev/null 2>&1 &" )
+    Configuration::MAX_LIST.times do |i|
+      results = Gtk2AppLib::Widgets::HBox.new(vbox)
+      link = Gtk2AppLib::Widgets::Button.new(*Configuration::GO2_BUTTON+[results]){|url,*emits|
+        Gtk2AppLib.run(url)
         @data.hit(url)
       }
-      link.value = nil
+      link.is = nil
       label = nil
-      event_box = Gtk2AppLib::EventBox.new(results){|e1,e2|
-        if e2.button == 1 && link.value then
-          if title = Gtk2AppLib::DIALOGS.entry('New title:') then
-            @data[link.value][:title] = title
+      event_box = Gtk2AppLib::Widgets::EventBox.new(results,'button_press_event'){|*emits|
+        if emits.last.button == 1 && link.is then
+          if title = Gtk2AppLib::DIALOGS.entry(*Configuration::NEW_TITLE_DIALOG) then
+            @data[link.is][:title] = title
             label.text = App.trunc(title,80)
           end
           true
@@ -204,29 +205,29 @@ class App
           false
         end
       }
-      label = Gtk2AppLib::Label.new('', event_box, {:label_width=>500})
-      Gtk2AppLib::Button.new(IMAGE[:reload], results){
-        if url = link.value then
+      label = Gtk2AppLib::Widgets::Label.new(*Configuration::BOOKMARK_LABEL+[event_box])
+      Gtk2AppLib::Widgets::Button.new(*Configuration::RELOAD_BUTTON+[results]){
+        if url = link.is then
           values = @data.store(url)
           if values then
             label.text = App.trunc(values[:title],80,url)
           else
-            link.value = nil
+            link.is = nil
             label.text = '*'
           end
         end
       }
-      Gtk2AppLib::Button.new(IMAGE[:down], results){
-	@data[link.value][:hits] = 0.0 # this demotes the link
+      Gtk2AppLib::Widgets::Button.new(*Configuration::DOWN_BUTTON+[results]){
+	@data[link.is][:hits] = 0.0 # this demotes the link
         search
       }
       @results.push([label,link])
     end
 
-    progress = Gtk2AppLib::HBox.new(vbox)
-    @progress_bar = Gtk2AppLib::ProgressBar.new(progress)
-    Gtk2AppLib::Button.new(IMAGE[:reload],progress){ build_dock_menu }
-    @progress_label = Gtk2AppLib::Label.new('0',progress)
+    progress = Gtk2AppLib::Widgets::HBox.new(vbox)
+    @progress_bar = Gtk2AppLib::Widgets::ProgressBar.new(progress)
+    Gtk2AppLib::Widgets::Button.new(*Configuration::RELOAD_BUTTON+[progress]){ build_dock_menu }
+    @progress_label = Gtk2AppLib::Widgets::Label.new('0',progress)
     done if done?
   end
 end

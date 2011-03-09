@@ -15,7 +15,7 @@ spec = Gem::Specification.new do |s|
   s.date = Date.today.to_s
   s.summary = `head -n 1 README.txt`.strip
   s.email = "carlosjhr64@gmail.com"
-  s.homepage = "http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks"
+  s.homepage = "https://sites.google.com/site/gtk2applib/home/gtk2applib-applications/gtk2bookmarks"
   s.description = `head -n 5 README.txt | tail -n 3`
   s.has_rdoc = false
   s.authors = ['carlosjhr64@gmail.com']
@@ -50,9 +50,9 @@ puts fn
   s.executables = executables
   s.default_executable = project
 
-  s.add_dependency('gtk2applib', '~> 7.1')
+  s.add_dependency('gtk2applib', '~> 14.0')
   s.add_dependency('hpricot', '~> 0.8')
   s.requirements << 'gtk2'
 
-  s.rubyforge_project = project
+  # s.rubyforge_project = project # no longer on rubyforge
 end

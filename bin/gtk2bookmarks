@@ -1,43 +1,39 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-gem 'gtk2applib', '~> 7.1'
+gem 'gtk2applib', '~> 14.0'
+gem 'hpricot', '~> 0.8'
 require 'gtk2applib'
 
-include Gtk2AppLib
-program = Program.new( {
-        :name           => 'Ruby-Gnome Bookmarks',
-        :tooltip        => 'Bookmarks',
-	:icon_name	=> 'Bookmarks',
-	:FILE		=> __FILE__,
-	:lock		=> "Proceed anyways?",
+program = Gtk2AppLib::Program.new( {
+        'name'           => 'Ruby-Gnome Bookmarks',
+	'authors'	=> ['carlosjhr64@gmail.com'],
+	'website'	=> 'https://sites.google.com/site/gtk2applib/home/gtk2applib-applications/gtk2bookmarks',
+	'website_label'	=> 'Ruby-Gnome Bookmarks',
+	'license'	=> 'GPL',
+	'copyright'	=> '2011-03-08 19:03:35',
 	} )
 
-require 'gtk2bookmarks'
-data = Gtk2Bookmarks::Data.load(Configuration::DATA_DUMP_FILE,true)
-data.options(Configuration::DATA_OPTIONS)
-app = Gtk2Bookmarks::App.new(data,program.dock_menu)
+data = app = nil
 begin
+  require 'gtk2bookmarks'
+  data = Gtk2Bookmarks::Data.load(Gtk2Bookmarks::Configuration::DATA_DUMP_FILE,true)
+  data.options(Gtk2Bookmarks::Configuration::DATA_OPTIONS)
+  app = Gtk2Bookmarks::App.new(program,data)
   app.build_dock_menu
-  about = {
-	:authors	=> ['carlosjhr64@gmail.com'],
-	:website	=> 'http://ruby-gnome-apps.blogspot.com/search/label/Bookmarks',
-	:website_label	=> 'Ruby-Gnome Bookmarks',
-	:license	=> 'GPL',
-	:copyright	=> '2011-03-01 10:08:45',
-	}
-  program.window(about){|window|
-    program.app.menu.append_menu_item('-')
-    program.app.menu.append_menu_item('_Full Reload'){ app.full_reload }
+  program.window do |window|
+    program.append_app_menu(Gtk::SeparatorMenuItem.new)
+    program.append_app_menu('_Full Reload'){ app.full_reload }
     app.build_window(window)
-  }
+    window.show_all
+  end
 rescue Exception
-  Gtk2AppLib.puts_bang!('Shutting down')
+  $!.puts_bang!
 ensure
   begin
-    data.dump(Configuration::DATA_DUMP_FILE)
+    data.dump(Gtk2Bookmarks::Configuration::DATA_DUMP_FILE) if data
+    app.thread_kill if app
     program.finalize
-    app.thread_kill
   rescue Exception
-    Gtk2AppLib.puts_bang!
+    $!.puts_bang!
   end
 end

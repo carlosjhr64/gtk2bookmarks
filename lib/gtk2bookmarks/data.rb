@@ -1,11 +1,15 @@
-require 'net/http'
-require 'uri'
-require 'cgi'
-require 'hpricot'
-require 'timeout'
+require 'uri'		# URI defined
+require 'cgi'		# CGI defined
+require 'hpricot'	# Hpricot defined
+require 'timeout'	# Timeout defined
+			# Net defined, required in appconfig
+			# Regexp defined
+			# File defined
+			# Marshal defined
+			# [] defined
 
 module Gtk2Bookmarks
-class Data < Hash
+class Data < Hash	# Data defined
   attr_accessor :exclude_tags, :timeout, :max_list, :min_list, :attenuation, :initial_tags, :small
 
   SPLIT_BY = Regexp.new('[\W_]+')
@@ -67,8 +71,9 @@ class Data < Hash
         response = (body)? http.get(path_query): http.head(path_query)
       }
     end
-    if location = response.header['location'] then
-      response.header['location'] = ('http://' + uri.host + location) if location=~/^\//
+    if (location = response.header['location']) && location=~/^\// then
+      prefix = (url=~/^https/)? 'https://' : 'http://'
+      response.header['location'] = (prefix + uri.host + location)
     end
     return response
   end
@@ -104,6 +109,10 @@ class Data < Hash
     end
   end
 
+  def _chase(location)
+    self.store(location) if location && !self.has_key?(location)
+  end
+
   def store(url)
     begin
       response = http_get(url)
@@ -124,14 +133,10 @@ class Data < Hash
     rescue Exception
       # don't overwrite, probably some network error
       self[url] = nil if !self.has_key?(url)
-      Gtk2AppLib.puts_bang!(url)
+      $!.puts_bang!(url)
       sleep(1) if $trace
     end
     self[url]
-  end
-
-  def _chase(location)
-    store(location) if location && !self.has_key?(location)
   end
 
   def hit(url)
@@ -158,7 +163,7 @@ class Data < Hash
         store(url)
       end
     rescue Exception
-      Gtk2AppLib.puts_bang!(url)
+      $!.puts_bang!(url)
       sleep(1) if $trace
     end
   end

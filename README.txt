@@ -61,7 +61,7 @@ Note that gkt2bookmarks expects to find bookmarks in
 
 You can edit these in
 
-	~/.gtk2bookmarks-2/appconfig-1.0.rb
+	~/.gtk2bookmarks-2/appconfig-4.rb
 
 FULL RELOAD
 From the main menu, select full reload to re-check missing bookmarks.
