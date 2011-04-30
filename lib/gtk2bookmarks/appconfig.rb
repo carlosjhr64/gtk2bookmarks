@@ -27,21 +27,23 @@ module Configuration
   # your imported bookmarks
   home = ENV['HOME'] 
   BOOKMARKS_FILES = [
-	home+'/.gnome2/epiphany/bookmarks.rdf',				# Epiphany's bookmarks RDF file
- 	home+'/Desktop/bookmarks.html',					# Maybe you have a few here
-	Gtk2AppLib::USERDIR+'/bookmarks.html',				# Maybe you copy your favorite bookmarks here
- 	home+'/.bookmarks/MyBookmarks.xml',				# maemo has bookmarks here
- 	home+'/.opera/bookmarks.adr',					# opera's
- 	home+'/.config/google-chrome/Default/Bookmarks',		# google-chrome's
-	]
-  mozilla = "#{home}/.mozilla"
-  if File.exist?(mozilla) && File.directory?(mozilla) then
-    require 'find'
-    Find.find(mozilla) do |filename|
-      BOOKMARKS_FILES.push(filename) if filename =~ /bookmarks/i && File.file?(filename)
+    home+'/Desktop/bookmarks.html',		# Maybe you have a few here
+    Gtk2AppLib::USERDIR+'/bookmarks.html',	# Maybe you copy your favorite bookmarks here
+  ]
+  # where might these bookmarks be?
+  [
+    '.mozilla', '.gnome2/epiphany', '.opera', '.config/google-chrome',	# Linux
+    '.bookmarks',							# Maemo
+    'AppData/Mozilla/Firefox',						# Windows
+  ].each do |dir|
+    directory = "#{home}/#{dir}"
+    if File.exist?(directory) && File.directory?(directory) then
+      require 'find'
+      Find.find(directory) do |filename|
+        BOOKMARKS_FILES.push(filename) if filename =~ /bookmarks[^\\\/]*$/i && File.file?(filename)
+      end
     end
   end
-
 
   TOP_TAGS	= 8
   MAX_LIST	= 13
