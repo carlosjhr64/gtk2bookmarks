@@ -50,7 +50,7 @@ puts fn
   s.executables = executables
   s.default_executable = project
 
-  s.add_dependency('gtk2applib', '~> 14.0')
+  s.add_dependency('gtk2applib', '~> 15.3')
   s.requirements << 'gtk2'
   s.requirements << 'nokogiri'
   s.requirements << 'hpricot'
