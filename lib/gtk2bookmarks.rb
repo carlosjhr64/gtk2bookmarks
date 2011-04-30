@@ -64,7 +64,7 @@ class App
 
   def delete_bookmarks_not_on_files
     on_files = Configuration.bookmarks{|url,seen| seen[url] = true }
-    @data.delete_if{|url,values| (values.nil? || (values[:hits] <= 0.0)) && !on_files[url]}
+    @data.delete_if{|url,values| (values.nil? || (values[:HITS] <= 0.0)) && !on_files[url]}
   end
 
   def _hit_urls(urls)
@@ -197,7 +197,7 @@ class App
       event_box = Gtk2AppLib::Widgets::EventBox.new(results,'button_press_event'){|*emits|
         if emits.last.button == 1 && link.is then
           if title = Gtk2AppLib::DIALOGS.entry(*Configuration::NEW_TITLE_DIALOG) then
-            @data[link.is][:title] = title
+            @data[link.is][:TITLE] = title
             label.text = App.trunc(title,80)
           end
           true
@@ -210,7 +210,7 @@ class App
         if url = link.is then
           values = @data.store(url)
           if values then
-            label.text = App.trunc(values[:title],80,url)
+            label.text = App.trunc(values[:TITLE],80,url)
           else
             link.is = nil
             label.text = '*'
@@ -218,7 +218,7 @@ class App
         end
       }
       Gtk2AppLib::Widgets::Button.new(*Configuration::DOWN_BUTTON+[results]){
-	@data[link.is][:hits] = 0.0 # this demotes the link
+	@data[link.is][:HITS] = 0.0 # this demotes the link
         search
       }
       @results.push([label,link])

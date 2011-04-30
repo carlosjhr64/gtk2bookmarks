@@ -51,8 +51,9 @@ puts fn
   s.default_executable = project
 
   s.add_dependency('gtk2applib', '~> 14.0')
-  s.add_dependency('hpricot', '~> 0.8')
   s.requirements << 'gtk2'
+  s.requirements << 'nokogiri'
+  s.requirements << 'hpricot'
 
   # s.rubyforge_project = project # no longer on rubyforge
 end

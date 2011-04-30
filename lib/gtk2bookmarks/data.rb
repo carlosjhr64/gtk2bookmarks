@@ -1,6 +1,21 @@
+begin
+  gem 'nokogiri', '~> 1.4'
+  require 'nokogiri'
+  NOKOGIRI = true
+rescue Exception
+  begin
+    $!.puts_bang!       if $trace
+    gem 'hpricot', '~> 0.8'
+    require 'hpricot'
+    NOKOGIRI = false
+  rescue Exception
+    $!.put_bang!        if $trace
+    $stderr.puts "Need either nokogiri or hpricot"
+    exit
+  end
+end
 require 'uri'		# URI defined
 require 'cgi'		# CGI defined
-require 'hpricot'	# Hpricot defined
 require 'timeout'	# Timeout defined
 			# Net defined, required in appconfig
 			# Regexp defined
@@ -35,13 +50,13 @@ class Data < Hash	# Data defined
   end
 
   def options(hash)
-    @exclude_tags	= hash[:exclude_tags]	|| []
-    @timeout		= hash[:timeout]	|| 15
-    @max_list		= hash[:max_list]	|| 13
-    @min_list		= hash[:min_list]	|| 3
-    @attenuation	= hash[:attenuation]	|| 0.9
-    @initial_tags	= hash[:initial_tags]	|| []
-    @small		= hash[:small]		|| 0.5
+    @exclude_tags	= hash[:EXCLUDE_TAGS]	|| []
+    @timeout		= hash[:TIMEOUT]	|| 15
+    @max_list		= hash[:MAX_LIST]	|| 13
+    @min_list		= hash[:MIN_LIST]	|| 3
+    @attenuation	= hash[:ATTENUATION]	|| 0.9
+    @initial_tags	= hash[:INITIAL_TAGS]	|| []
+    @small		= hash[:SMALL]		|| 0.5
   end
 
   def initialize(hash={})
@@ -53,8 +68,8 @@ class Data < Hash	# Data defined
     File.rename(file,file+'.bak')	if File.exist?(file)
     self.each{|url,values|
       if values then
-        hits = values[:hits]
-        values[:hits] = @attenuation*hits if hits > @small # don't attenuate to zero
+        hits = values[:HITS]
+        values[:HITS] = @attenuation*hits if hits > @small # don't attenuate to zero
       end
     }
     File.open(file, 'w'){|fh| Marshal.dump(self, fh)}
@@ -95,17 +110,17 @@ class Data < Hash	# Data defined
   end
 
   def _store(url,body)
-    doc		= Hpricot(body)/'head'
+    doc	= ((NOKOGIRI)? Nokogiri::HTML(body) : Hpricot(body)) / 'head'
     title	= Data.title(doc)
     description	= Data.meta(doc,'description')
     keywords	= Data.meta(doc,'keywords')
     tags	= get_tags(url,title,description,keywords)
     if values = self[url] then
-      values[:title]	= title
-      values[:tags]	= tags
-      # values[:hits]	+= 1.0 # it's just a reload... don't hit it
+      values[:TITLE]	= title
+      values[:TAGS]	= tags
+      # values[:HITS]	+= 1.0 # it's just a reload... don't hit it
     else
-      self[url] = {:title=>title, :tags=>tags, :hits=>1.0}
+      self[url] = {:TITLE=>title, :TAGS=>tags, :HITS=>1.0}
     end
   end
 
@@ -147,7 +162,7 @@ class Data < Hash	# Data defined
         if response.code =~ /^2/ then
           if self[url] then
             # increment the hits
-            self[url][:hits] += 1.0
+            self[url][:HITS] += 1.0
           else
             # url is back? get the data
             store(url)
@@ -169,7 +184,7 @@ class Data < Hash	# Data defined
   end
 
   def hits(url)
-    self[url][:hits]
+    self[url][:HITS]
   end
 
   def top_tags(match1=nil)
@@ -179,12 +194,12 @@ class Data < Hash	# Data defined
     self.keys.each{|url|
       next if !(values = self[url])
       count += 1
-      _tags = values[:tags]
+      _tags = values[:TAGS]
       if (!match1 || _tags.include?(match1)) then
         _tags.each{|tag|
           top[tag] = [0,0] if !top[tag]
           top[tag][0] += 1
-          top[tag][1] += values[:hits]
+          top[tag][1] += values[:HITS]
         }
       end
 
@@ -211,12 +226,12 @@ class Data < Hash	# Data defined
     count = 0
     urls = []
     self.each{|url,values|
-      next if !values || (values[:hits] <= 0.0)
-      _tags = values[:tags]
+      next if !values || (values[:HITS] <= 0.0)
+      _tags = values[:TAGS]
       if _tags.include?(tag1) && _tags.include?(tag2) then
         count += 1 
         return nil if count > maxout
-        urls.push([values[:title],url])
+        urls.push([values[:TITLE],url])
       end
     }
     return nil if count < @min_list

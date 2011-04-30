@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 require 'rubygems'
-gem 'gtk2applib', '~> 14.0'
-gem 'hpricot', '~> 0.8'
+gem 'gtk2applib', '~> 15.3'
 require 'gtk2applib'
 
 program = Gtk2AppLib::Program.new( {

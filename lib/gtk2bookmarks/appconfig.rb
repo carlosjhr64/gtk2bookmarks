@@ -2,7 +2,7 @@ module Gtk2AppLib
 module Widgets
   WIDGET[:Button][:focus_on_click=] = false
   if Gtk2AppLib::HILDON then # Maemo Tweeks
-    WIDGET[:Entry][:modify_font] = WIDGET[:Label][:modify_font] = Configuration::FONT[:Large]
+    WIDGET[:Entry][:modify_font] = WIDGET[:Label][:modify_font] = Configuration::FONT[:LARGE]
     WIDGET[:Widgets][:pack_start][2] = 4
   end
 end
@@ -125,37 +125,37 @@ module Configuration
   DEFAULT_FG_COLOR		= Gtk2AppLib::Color[:Black]
 
   # Image for link button
-  Gtk2AppLib.image([:Reload,:Go2,:Search,:Clear,:Down,:Google])
+  Gtk2AppLib.image([:RELOAD,:GO2,:SEARCH,:CLEAR,:DOWN,:GOOGLE])
 
   # Dock to icon, don't use close.
   Gtk2AppLib::Configuration::MENU[:dock] = '_Dock'
 
   DATA_OPTIONS	= {
-	:exclude_tags	=> EXCLUDE_TAGS,
+	:EXCLUDE_TAGS	=> EXCLUDE_TAGS,
 	# Time to wait for a get/head request
-	:timeout	=> 15,
-	:max_list	=> MAX_LIST,
-	:min_list	=> MIN_LIST,
+	:TIMEOUT	=> 15,
+	:MAX_LIST	=> MAX_LIST,
+	:MIN_LIST	=> MIN_LIST,
 	# When the hits data is saved, it's attenuated by this factor (0 < attenuation < 1).
-	:attenuation	=> 0.9,
+	:ATTENUATION	=> 0.9,
 	# Do not attenuate below this amount
-	:small		=> 0.5,
+	:SMALL		=> 0.5,
 	# Gtk2Bookmarks will give the top tags, but
 	# one can override with one's own initial tags.
-	:initial_tags	=> [] # ie. ['weather','email'] must be all lowercase and alphanumeric
+	:INITIAL_TAGS	=> [] # ie. ['weather','email'] must be all lowercase and alphanumeric
 	}
 
   clicked = 'clicked'
-  SEARCH_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Search],clicked]
+  SEARCH_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:SEARCH],clicked]
   SEARCH_ENTRY = ['',{:width_request= => 500},'activate']
-  CLEAR_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Clear],clicked]
-  GOOGLE_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Google],clicked]
+  CLEAR_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:CLEAR],clicked]
+  GOOGLE_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:GOOGLE],clicked]
   TOP_TAG_BUTTON = ['',clicked]
-  GO2_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Go2],clicked]
+  GO2_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:GO2],clicked]
   NEW_TITLE_DIALOG = ['New title:']
   BOOKMARK_LABEL = ['',{:width_request= => 500, :wrap= => true}]
-  RELOAD_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Reload],clicked]
-  DOWN_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:Down],clicked]
+  RELOAD_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:RELOAD],clicked]
+  DOWN_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:DOWN],clicked]
 
   # The application needs a list of bookmark urls.
   # Configuration.bookmarks yields each url.
@@ -207,7 +207,7 @@ module Configuration
     rgxbs = (tokens)? query_split.map{|x| Regexp.new("\b#{x}\b",Regexp::IGNORECASE)} : nil
     bookmarks.each {|url,values|
       next if !values
-      title = values[:title]
+      title = values[:TITLE]
       result = [url,title,rand]
       # Initially seed with a random number 1>rand>0.
       # This will present the user with an initial random list
@@ -217,7 +217,7 @@ module Configuration
         # Currently, tags are only available from epiphany, but
         # firefox's folders should become available as tags eventually.
         link = url
-        tags = values[:tags].join(' ')
+        tags = values[:TAGS].join(' ')
         # Note how these value tags hits the most,
         # followed by the title hits, then
         # least by url link hits.
@@ -241,7 +241,7 @@ module Configuration
           result[2] += 2.0 if link=~rgxb
         }
       end
-      hits = values[:hits]
+      hits = values[:HITS]
       result[2] *= (hits > 0.0)? (2.0 / (1.0 + Math.exp(-hits))): 0.25
       results.push(result)
     }
