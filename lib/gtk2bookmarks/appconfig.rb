@@ -34,7 +34,7 @@ module Configuration
   [
     '.mozilla', '.gnome2/epiphany', '.opera', '.config/google-chrome',	# Linux
     '.bookmarks',							# Maemo
-    'AppData/Mozilla/Firefox',						# Windows
+    'AppData/Roaming/Mozilla/Firefox',					# Windows
   ].each do |dir|
     directory = "#{home}/#{dir}"
     if File.exist?(directory) && File.directory?(directory) then

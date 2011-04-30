@@ -208,7 +208,7 @@ class Data < Hash	# Data defined
     # Sort by top used tags and...
     top = top.sort{|a,b| b[1][0]<=>a[1][0]}
     max = @max_list + (count/2)
-    i = top.find_index{|a| a[1][0] < max}
+    i = top.find_index{|a| a[1][0] < max}	|| 0
     # ...chop off useless common ones
     top = top[i..-1]
 
