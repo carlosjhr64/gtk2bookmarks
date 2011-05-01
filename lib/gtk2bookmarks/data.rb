@@ -78,11 +78,13 @@ class Data < Hash	# Data defined
   def http_get(url,body=true)
     response = nil
     uri = URI.parse(url)
-    Net::HTTP.start(uri.host,uri.port) do |http|
+    session = Net::HTTP.new(uri.host, uri.port)
+    session.use_ssl = true if uri.port == 443
+    session.start do |http|
       path = uri.path || '/'; path = '/' if path == ''
       path_query = path + ((query = uri.query)? ('?'+query): '')
+      $stderr.puts path_query if $trace
       Timeout.timeout(@timeout){
-        $stderr.puts path_query if $trace
         response = (body)? http.get(path_query): http.head(path_query)
       }
     end
