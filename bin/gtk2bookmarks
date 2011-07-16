@@ -9,7 +9,7 @@ program = Gtk2AppLib::Program.new( {
 	'website'	=> 'https://sites.google.com/site/gtk2applib/home/gtk2applib-applications/gtk2bookmarks',
 	'website_label'	=> 'Ruby-Gnome Bookmarks',
 	'license'	=> 'GPL',
-	'copyright'	=> '2011-05-01 08:02:28',
+	'copyright'	=> '2011-07-16 10:46:03',
 	} )
 
 data = app = nil
