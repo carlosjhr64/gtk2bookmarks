@@ -1,0 +1,2 @@
+#!/bin/bash
+reek $1 lib/gtk2bookmarks/appconfig.rb bin/gtk2bookmarks lib/gtk2bookmarks/data.rb lib/gtk2bookmarks.rb

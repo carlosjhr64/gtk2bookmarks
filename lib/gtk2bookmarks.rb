@@ -59,10 +59,15 @@ class App
 
   def _store_new_bookmarks
     now = Time.now
-    Configuration.bookmarks(@data,@mtime){|url,data|
-      data.store(url)
+    Configuration.bookmarks(@data,@mtime) do |url,data|
+      sleep(Configuration::RATE_LIMIT)
+      while Thread.list.count >= Configuration::THREADS do
+        Thread.pass
+      end
+      Thread.new{ data.store(url) }
       progressing
-    }
+    end
+    Thread.list.each{|thread| thread.join}
     @mtime = now
   end
 

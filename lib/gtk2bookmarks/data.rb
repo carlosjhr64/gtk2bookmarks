@@ -28,6 +28,7 @@ class Data < Hash	# Data defined
   attr_accessor :exclude_tags, :timeout, :max_list, :min_list, :attenuation, :initial_tags, :small
 
   SPLIT_BY = Regexp.new('[\W_]+')
+  MUTEX = Mutex.new
 
   def self.load(file,create=false)
     if File.exist?(file) then
@@ -66,12 +67,12 @@ class Data < Hash	# Data defined
 
   def dump(file)
     File.rename(file,file+'.bak')	if File.exist?(file)
-    self.each{|url,values|
+    self.each do |url,values|
       if values then
         hits = values[:HITS]
         values[:HITS] = @attenuation*hits if hits > @small # don't attenuate to zero
       end
-    }
+    end
     File.open(file, 'w'){|fh| Marshal.dump(self, fh)}
   end
 
@@ -122,7 +123,9 @@ class Data < Hash	# Data defined
       values[:TAGS]	= tags
       # values[:HITS]	+= 1.0 # it's just a reload... don't hit it
     else
-      self[url] = {:TITLE=>title, :TAGS=>tags, :HITS=>1.0}
+      MUTEX.synchronize do
+        self[url] = {:TITLE=>title, :TAGS=>tags, :HITS=>1.0}
+      end
     end
   end
 
@@ -139,17 +142,23 @@ class Data < Hash	# Data defined
           _store(url,body)
         else
           # don't overwrite
-          self[url] = nil if !self.has_key?(url)
+          MUTEX.synchronize do
+            self[url] = nil if !self.has_key?(url)
+          end
         end
       else
         # no longer a valid html url
-        self[url] = nil
+        MUTEX.synchronize do
+          self[url] = nil
+        end
       end
       $stderr.puts "Store: #{url}\t=> #{self[url]}"	if $trace
       _chase(response.header['location']) # chasing moves...
     rescue Exception
       # don't overwrite, probably some network error
-      self[url] = nil if !self.has_key?(url)
+      MUTEX.synchronize do
+        self[url] = nil if !self.has_key?(url)
+      end
       $!.puts_bang!(url)
       sleep(1) if $trace
     end
@@ -164,14 +173,18 @@ class Data < Hash	# Data defined
         if response.code =~ /^2/ then
           if self[url] then
             # increment the hits
-            self[url][:HITS] += 1.0
+            MUTEX.synchronize do
+              self[url][:HITS] += 1.0
+            end
           else
             # url is back? get the data
             store(url)
           end
         else
           # url no longer there, nil it!
-          self[url] = nil
+          MUTEX.synchronize do
+            self[url] = nil
+          end
         end
         $stderr.puts "Hit: #{url}\t=> #{self[url]}"	if $trace
         _chase(response.header['location']) # chasing moves...

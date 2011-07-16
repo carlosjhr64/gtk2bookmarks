@@ -39,6 +39,9 @@ module Configuration
     SSL = false
   end
 
+  THREADS = 8 # number of threads to allow
+  RATE_LIMIT = 0.2 # how long to sleep before each request
+
   # where your bookmarks data will be saved
   DATA_DUMP_FILE = Gtk2AppLib::USERDIR+'/gtk2bookmarks.dat'
 
