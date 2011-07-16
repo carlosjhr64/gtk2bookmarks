@@ -184,7 +184,7 @@ module Configuration
             end
           rescue Exception
             $stderr.puts line if $verbose
-            Gtk2AppLib.puts_bang!(fn)
+            $!.puts_bang!(fn)
             sleep(1) if $trace
           end
         }
