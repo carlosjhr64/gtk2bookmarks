@@ -67,7 +67,6 @@ class App
       Thread.new{ data.store(url) }
       progressing
     end
-    Thread.list.each{|thread| thread.join}
     @mtime = now
   end
 
