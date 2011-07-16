@@ -1,3 +1,21 @@
+# WIDGET defined
+# Gtk2AppLib defined
+# Configuration defined
+# WINDOW_DEFAULT_SIZE defined
+# ENV defined
+# File defined
+# Find defined
+# Time defined
+# Regexp defined
+# Math defined
+# Gtk2Bookmarks defined
+# Gtk defined
+# Nokogiri defined
+# Hpricot defined
+# Thread defined
+# App defined
+
+
 module Gtk2AppLib
 module Widgets
   WIDGET[:Button][:focus_on_click=] = false
@@ -32,9 +50,9 @@ module Configuration
   ]
   # where might these bookmarks be?
   [
-    '.mozilla', '.gnome2/epiphany', '.opera', '.config/google-chrome',	# Linux
-    '.bookmarks',							# Maemo
-    'AppData/Roaming/Mozilla/Firefox',					# Windows
+    '.mozilla', '.gnome2/epiphany', '.opera', '.config/google-chrome', '.config/chromium',	# Linux
+    '.bookmarks',			# Maemo
+    'AppData/Roaming/Mozilla/Firefox',	# Windows
   ].each do |dir|
     directory = "#{home}/#{dir}"
     if File.exist?(directory) && File.directory?(directory) then
@@ -117,6 +135,7 @@ module Configuration
 	'less', 'least',
 	'more', 'most',
 	'many', 'much',
+	'true', 'false',
 	].uniq
 
   # These are the color codes for search results
@@ -159,37 +178,45 @@ module Configuration
   RELOAD_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:RELOAD],clicked]
   DOWN_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:DOWN],clicked]
 
+  URL_MATCH = (SSL)? Regexp.new('https?://[^"<>\s\']+') : Regexp.new('http://[^"<>\s\']+')
+
+  def self.bookmarks_block_call(line,seen,&block)
+    # Giving up on parsing all these types of files...
+    # Just want the url's
+    while md = line.match(URL_MATCH) do
+      url = md[0]
+      # note that it's up to the iterator to update seen
+      yield(url,seen) if !seen.has_key?(url)
+      line = md.post_match
+    end
+  end
+
+  def self.bookmarks_read(fh, seen, &block)
+    while line = fh.gets do
+      begin
+        Configuration.bookmarks_block_call(line,seen,&block)
+      rescue Exception
+        $stderr.puts line if $verbose
+        $!.puts_bang!
+        sleep(1) if $trace
+      end
+    end
+    fh.close
+  end
+
   # The application needs a list of bookmark urls.
   # Configuration.bookmarks yields each url.
   # You can modify this list to exactly the bookmarks you want, but
   # must still do
   # 	seen = Configuration.bookmarks(seen={},mtime=Time.at(0))
-  def self.bookmarks(seen={},mtime=Time.at(0))
+  def self.bookmarks(seen={},mtime=Time.at(0),&block)
     # Bookmark files
     # pattern of directories for which we'll spider
-    url_match = (SSL)? Regexp.new('https?://[^"<>\s\']+') : Regexp.new('http://[^"<>\s\']+')
-    BOOKMARKS_FILES.each{|fn|
+    BOOKMARKS_FILES.each do |fn|
       next if !File.exist?(fn) || !File.file?(fn) || (File.mtime(fn)<mtime)
       $stderr.puts fn if $trace
-      File.open(fn,'r'){|fh|
-        fh.each{|line|
-          # Giving up on parsing all these types of files...
-          # Just want the url's
-          begin
-            while md = line.match(url_match) do
-              url = md[0]
-              # note that it's up to the iterator to update seen
-              yield(url,seen) if !seen.has_key?(url)
-              line = md.post_match
-            end
-          rescue Exception
-            $stderr.puts line if $verbose
-            $!.puts_bang!(fn)
-            sleep(1) if $trace
-          end
-        }
-      }
-    }
+      Configuration.bookmarks_read( File.open(fn,'r'), seen, &block )
+    end
     return seen
   end
 
@@ -207,7 +234,7 @@ module Configuration
     rgxis = (tokens)? query_split.map{|x| Regexp.new(x,Regexp::IGNORECASE)} : nil
     # Case insensitive, whole word match.
     rgxbs = (tokens)? query_split.map{|x| Regexp.new("\b#{x}\b",Regexp::IGNORECASE)} : nil
-    bookmarks.each {|url,values|
+    bookmarks.each do |url,values|
       next if !values
       title = values[:TITLE]
       result = [url,title,rand]
@@ -223,30 +250,30 @@ module Configuration
         # Note how these value tags hits the most,
         # followed by the title hits, then
         # least by url link hits.
-        rgxs.each{|rgx|
+        rgxs.each do |rgx|
           result[2] += 8.0 if tags=~rgx
           result[2] += 4.0 if title=~rgx
           result[2] += 2.0 if link=~rgx
-        }
+        end
         # ...here is why the order got reversed, above.
         # An increasing kicker, i, is a added making the first words in the query more relevant.
         i = 0
-        rgxis.each{|rgxi|
+        rgxis.each do |rgxi|
           result[2] += 8.0+i if tags=~rgxi
           result[2] += 4.0+i if title=~rgxi
           result[2] += 2.0+i if link=~rgxi
           i += 1
-        }
-        rgxbs.each{|rgxb|
+        end
+        rgxbs.each do |rgxb|
           result[2] += 8.0 if tags=~rgxb
           result[2] += 4.0 if title=~rgxb
           result[2] += 2.0 if link=~rgxb
-        }
+        end
       end
       hits = values[:HITS]
       result[2] *= (hits > 0.0)? (2.0 / (1.0 + Math.exp(-hits))): 0.25
       results.push(result)
-    }
+    end
     # Now results can be sorted by its :sort value...
     return results.sort{|a,b| b[2]<=>a[2]}[0..(n-1)]
   end

@@ -13,6 +13,10 @@ class App
     @count = 1
 
     @thread = nil
+    @top_tags = []
+    @results = []
+
+    @query = nil # gets set later
   end
 
   def thread_kill
@@ -49,7 +53,7 @@ class App
       @progress_label.text = 'Ready!'
       i = 0
       overwrite_top_tags
-      search
+      self.search
     end
   end
 
@@ -110,7 +114,7 @@ class App
           end
           submenu.append_menu_item('Run'){
             @query.text = "#{tag1} #{tag2}"
-            search
+            self.search
             @program.activate
           }
         end 
@@ -160,7 +164,7 @@ class App
     vbox = Gtk2AppLib::Widgets::VBox.new(window)
 
     form = Gtk2AppLib::Widgets::HBox.new(vbox)
-    @results = []
+    @results.clear
     Gtk2AppLib::Widgets::Button.new(*Configuration::SEARCH_BUTTON+[form]){ search }
     @query = Gtk2AppLib::Widgets::Entry.new(*Configuration::SEARCH_ENTRY+[form]){ search }
     Gtk2AppLib::Widgets::Button.new(*Configuration::CLEAR_BUTTON+[form]){
@@ -175,7 +179,7 @@ class App
     }
 
     top_tags = Gtk2AppLib::Widgets::HBox.new(vbox)
-    @top_tags = []
+    @top_tags.clear
     Configuration::TOP_TAGS.times do
       top_tag = Gtk2AppLib::Widgets::Button.new(*Configuration::TOP_TAG_BUTTON+[top_tags]){|tag,*emits|
         overwrite_top_tags(tag)
