@@ -1,0 +1,30 @@
+TODO
+
+	Options page?
+		What kind of options where you thinking?
+
+DONE
+
+	handle https
+	specify hpricot's version
+	Use nokogiri on Windows
+	Reload option
+	How to update on modified bookmarks?
+		It checks when first run regardless of mtime, OK.
+		It checks after every system call (hit, browser call) for modified bookmarks.
+	Crashes if rdf has no bookmarks
+		see original file that cause the failure
+		.gnome2/epiphany/bookmarks.rdf.bak
+
+	Sometimes a timeout is due to website being down.
+		Need a way to not diminish to zero?
+			Attenuating in that case.
+	Save the HITS, with demotion
+	Change RESPONSE to "verified hits"
+	reload on icon menu? in general is it working?
+	Default top tags to be configurable
+	Maemo look
+	Top tags buttons?
+	Maemo could use a click / refresh for random page
+	RDF file in user space? Copy RDF into Maemo.
+
