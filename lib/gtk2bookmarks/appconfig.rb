@@ -48,11 +48,12 @@ module Configuration
   # your imported bookmarks
   home = ENV['HOME'] 
   BOOKMARKS_FILES = [
-    home+'/Desktop/bookmarks.html',		# Maybe you have a few here
-    Gtk2AppLib::USERDIR+'/bookmarks.html',	# Maybe you copy your favorite bookmarks here
-  ]
+	File.join( Gtk2AppLib::USERDIR, bookmarks.html ),
+	]
+
   # where might these bookmarks be?
   [
+    "Desktop",
     '.mozilla', '.gnome2/epiphany', '.opera', '.config/google-chrome', '.config/chromium',	# Linux
     '.bookmarks',			# Maemo
     'AppData/Roaming/Mozilla/Firefox',	# Windows
@@ -181,16 +182,21 @@ module Configuration
   RELOAD_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:RELOAD],clicked]
   DOWN_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:DOWN],clicked]
 
-  URL_MATCH = (SSL)? Regexp.new('https?://[^"<>\s\']+') : Regexp.new('http://[^"<>\s\']+')
+  # based on http://regexlib.com/REDetails.aspx?regexp_id=153 by Michael Krutwig
+  URL_MATCH = (SSL)?	Regexp.new('https?\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(:[a-zA-Z0-9]*)?/?([a-zA-Z0-9\-\._\?\,\'/\\\+&amp;%\$\=~])*') :
+  			Regexp.new(  'http\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(:[a-zA-Z0-9]*)?/?([a-zA-Z0-9\-\._\?\,\'/\\\+&amp;%\$\=~])*')
 
   def self.bookmarks_block_call(line,seen,&block)
     # Giving up on parsing all these types of files...
     # Just want the url's
     while md = line.match(URL_MATCH) do
+      line = md.post_match
       url = md[0]
+      next if url =~ /[.,\/\(\)\s\%\#]$/ # bad url
+      next if url =~ /\.((icon?)|(pdf)|(png)|(jpg))$/i
+      next if url =~ /favicon/i
       # note that it's up to the iterator to update seen
       yield(url,seen) if !seen.has_key?(url)
-      line = md.post_match
     end
   end
 
