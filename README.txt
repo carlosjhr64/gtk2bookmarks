@@ -50,6 +50,7 @@ Note that gkt2bookmarks expects to find bookmarks in
 	~/.gnome2/epiphany/bookmarks.rdf
 	# Maybe you have a few here
 	~/Desktop/bookmarks.html',
+	~/Desktop/bookmarks*.json (firefox's backup of bookmarks), 
 	# Maybe you copy your favorite bookmarks here
         ~/.gtk2bookmarks-2/bookmarks.html',
 	# maemo has bookmarks here
