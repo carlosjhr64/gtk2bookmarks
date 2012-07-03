@@ -181,6 +181,7 @@ class App
         Gtk2AppLib.run("https://www.google.com/search?q=#{CGI.escape(query)}")
       end
     }
+    dock_on_go = Gtk2AppLib::Widgets::CheckButton.new(*Configuration::DOCK_ON_GO+[form])
 
     top_tags = Gtk2AppLib::Widgets::HBox.new(vbox)
     @top_tags.clear
@@ -197,6 +198,7 @@ class App
     Configuration::MAX_LIST.times do |i|
       results = Gtk2AppLib::Widgets::HBox.new(vbox)
       link = Gtk2AppLib::Widgets::Button.new(*Configuration::GO2_BUTTON+[results]){|url,*emits|
+        @program.dock if dock_on_go.active?
         Gtk2AppLib.run(url)
         @data.hit(url)
       }

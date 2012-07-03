@@ -48,7 +48,7 @@ module Configuration
   # your imported bookmarks
   home = ENV['HOME'] 
   BOOKMARKS_FILES = [
-	File.join( Gtk2AppLib::USERDIR, bookmarks.html ),
+	File.join( Gtk2AppLib::USERDIR, 'bookmarks.html' ),
 	]
 
   # where might these bookmarks be?
@@ -150,7 +150,7 @@ module Configuration
   DEFAULT_FG_COLOR		= Gtk2AppLib::Color[:Black]
 
   # Image for link button
-  Gtk2AppLib.image([:RELOAD,:GO2,:SEARCH,:CLEAR,:DOWN,:GOOGLE])
+  Gtk2AppLib.image([:RELOAD,:GO2,:SEARCH,:CLEAR,:DOWN,:GOOGLE,:DOCK])
 
   # Dock to icon, don't use close.
   Gtk2AppLib::Configuration::MENU[:dock] = '_Dock'
@@ -172,9 +172,10 @@ module Configuration
 
   clicked = 'clicked'
   SEARCH_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:SEARCH],clicked]
-  SEARCH_ENTRY = ['',{:width_request= => 500},'activate']
+  SEARCH_ENTRY = ['',{:width_request= => 450},'activate']
   CLEAR_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:CLEAR],clicked]
   GOOGLE_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:GOOGLE],clicked]
+  DOCK_ON_GO = [Gtk2AppLib::Configuration::IMAGE[:DOCK]]
   TOP_TAG_BUTTON = ['',clicked]
   GO2_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:GO2],clicked]
   NEW_TITLE_DIALOG = ['New title:']
