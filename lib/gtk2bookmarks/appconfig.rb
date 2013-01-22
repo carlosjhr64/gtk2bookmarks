@@ -183,9 +183,9 @@ module Configuration
   RELOAD_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:RELOAD],clicked]
   DOWN_BUTTON = [Gtk2AppLib::Configuration::IMAGE[:DOWN],clicked]
 
-  # based on http://regexlib.com/REDetails.aspx?regexp_id=153 by Michael Krutwig
-  URL_MATCH = (SSL)?	Regexp.new('https?\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(:[a-zA-Z0-9]*)?/?([a-zA-Z0-9\-\._\?\,\'/\\\+&amp;%\$\=~])*') :
-  			Regexp.new(  'http\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(:[a-zA-Z0-9]*)?/?([a-zA-Z0-9\-\._\?\,\'/\\\+&amp;%\$\=~])*')
+  # based on http://regexlib.com/REDetails.aspx?regexp_id=153 by Michael Krutwig, but with added #
+  URL_MATCH = (SSL)?	Regexp.new('https?\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(:[a-zA-Z0-9]*)?/?([#a-zA-Z0-9\-\._\?\,\'/\\\+&amp;%\$\=~])*') :
+  			Regexp.new(  'http\://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(:[a-zA-Z0-9]*)?/?([#a-zA-Z0-9\-\._\?\,\'/\\\+&amp;%\$\=~])*')
 
   def self.bookmarks_block_call(line,seen,&block)
     # Giving up on parsing all these types of files...
